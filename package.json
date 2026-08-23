@@ -1,0 +1,45 @@
+{
+  "name": "dsh-periscope",
+  "version": "0.2.0",
+  "description": "DSH plugin: keep text-only models (deepseek-v4-flash / deepseek-v4-pro) as the session default, and automatically route requests that carry image content to a configured vision-capable model (deepseek-v4-flash-vision-exp) 鈥?no manual model switching (periscope).",
+  "type": "module",
+  "main": "lib/index.js",
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "README.md",
+    "README.zh.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "license": "MIT",
+  "author": "lmh-2026",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lmh-2026/dsh-periscope.git"
+  },
+  "homepage": "https://github.com/lmh-2026/dsh-periscope#readme",
+  "bugs": {
+    "url": "https://github.com/lmh-2026/dsh-periscope/issues"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "plugin",
+    "bundle",
+    "vision",
+    "image",
+    "multimodal",
+    "auto-switch",
+    "periscope"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "@deepseek-ai/schemastery": "^3.18.1"
+  }
+}
