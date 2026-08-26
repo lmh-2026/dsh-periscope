@@ -1,6 +1,6 @@
 {
     "name":  "dsh-periscope",
-    "version":  "0.3.1",
+    "version":  "0.3.2",
     "description":  "DSH plugin: keep text-only models (deepseek-v4-flash / deepseek-v4-pro) as the session default and automatically route image-bearing requests to a configured vision model; also ships the generic file-attachment feature (drag/paste any file as a durable attachment the agent reads by path) as core patches (apply via scripts/patch-core.mjs).",
     "type":  "module",
     "main":  "lib/index.js",

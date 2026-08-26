@@ -1,26 +1,10 @@
 /**
  * dsh-periscope — core patch manifest for the generic file-attachment feature.
  *
- * The file-attachment feature touches DSH core packages that a third-party
- * Cordis plugin cannot extend at runtime (the api-proxy wire schema is a
- * module-internal zod constant, the composer intake is component-internal).
- * This manifest therefore carries the exact source-level replacements the
- * feature needs, applied to the installed core bundles by
- * `scripts/patch-core.mjs` (apply / revert / verify / status / diff).
- *
- * Every `old` string is the verbatim original text; every `new` string is the
- * patched replacement. `marker` is a distinctive snippet of the patched
- * content used for idempotency and `verify`.
- *
  * @module dsh-periscope/patches
  */
 
 export const PATCHES = [
-	// ────────────────────────────────────────────────────────────────────
-	// 1. @deepseek-ai/dsh-attachment (main bundle)
-	//    generic-file storage seam: AttachmentStore.saveFiles family and the
-	//    wire admission helper admitEncodedFiles.
-	// ────────────────────────────────────────────────────────────────────
 	{
 		pkg: "@deepseek-ai/dsh-attachment",
 		rel: "lib/index.js",
@@ -96,15 +80,9 @@ async function admitEncodedFiles(attachments, files) {
 				note: "export admitEncodedFiles",
 				old: `export { AttachmentError, AttachmentId, AttachmentStore, AttachmentStore as default, ImageVariantId, admitEncodedImages, isImageAdmissionError };`,
 				new: `export { AttachmentError, AttachmentId, AttachmentStore, AttachmentStore as default, ImageVariantId, admitEncodedFiles, admitEncodedImages, isImageAdmissionError };`
-			}
+			},
 		]
 	},
-
-	// ────────────────────────────────────────────────────────────────────
-	// 2. @deepseek-ai/dsh-attachment-local
-	//    durable file storage: sanitized sha256-addressed files under
-	//    DSH_HOME/attachments/v1/files/.
-	// ────────────────────────────────────────────────────────────────────
 	{
 		pkg: "@deepseek-ai/dsh-attachment-local",
 		rel: "lib/index.js",
@@ -181,15 +159,9 @@ function sanitizeAttachmentFileName(name) {
 }
 /** Persistent content-addressed local attachment store. */
 var LocalAttachmentStore = class extends AttachmentStore {`
-			}
+			},
 		]
 	},
-
-	// ────────────────────────────────────────────────────────────────────
-	// 3. @deepseek-ai/dsh-host-apiproxy
-	//    wire schema: accept {type:"file"} prompt parts; durablePromptContent
-	//    admits and persists them as {type:"file", file:{…path}} blocks.
-	// ────────────────────────────────────────────────────────────────────
 	{
 		pkg: "@deepseek-ai/dsh-host-apiproxy",
 		rel: "lib/index.js",
@@ -262,16 +234,9 @@ var LocalAttachmentStore = class extends AttachmentStore {`
 		};
 	});
 }`
-			}
+			},
 		]
 	},
-
-	// ────────────────────────────────────────────────────────────────────
-	// 4. @deepseek-ai/dsh-llm-deepseek
-	//    model-facing projection: a durable file block becomes text
-	//    ([附件：name（size）\n完整路径：path\n请读取该文件内容后继续。]) so the
-	//    agent reads the saved file with its own tools.
-	// ────────────────────────────────────────────────────────────────────
 	{
 		pkg: "@deepseek-ai/dsh-llm-deepseek",
 		rel: "lib/index.js",
@@ -328,16 +293,9 @@ function flattenText(blocks) {
 			});
 			break;
 		case "tool-result":`
-			}
+			},
 		]
 	},
-
-	// ────────────────────────────────────────────────────────────────────
-	// 5. @deepseek-ai/dsh-client-ui-conversation
-	//    composer draft attachments support kind:"file"; drop/paste classify
-	//    files by MIME; send serializes file blocks; draft release is safe
-	//    without a previewUrl; user bubbles render file chips.
-	// ────────────────────────────────────────────────────────────────────
 	{
 		pkg: "@deepseek-ai/dsh-client-ui-conversation",
 		rel: "lib/client.js",
@@ -595,14 +553,9 @@ function flattenText(blocks) {
 							files,
 							align: "end"
 						}),`
-			}
+			},
 		]
 	},
-
-	// ────────────────────────────────────────────────────────────────────
-	// 6. @deepseek-ai/dsh-client-ui-attachment
-	//    draft rail + history render file chips with per-type icon tiles.
-	// ────────────────────────────────────────────────────────────────────
 	{
 		pkg: "@deepseek-ai/dsh-client-ui-attachment",
 		rel: "lib/client.js",
@@ -626,6 +579,7 @@ function flattenText(blocks) {
 				removeLabel: t("image.remove", { name: attachment.file.name }),
 				fileName: attachment.file.name || t("image.pending"),
 				fileLabel: (attachment.file.name || t("image.pending")) + (attachment.file.size != null ? "（" + formatAttachmentSize(attachment.file.size) + "）" : ""),
+				fileTypeLabel: (fileExtensionOf(attachment.file.name) || "FILE") + (attachment.file.size != null ? " · " + formatAttachmentSize(attachment.file.size) : ""),
 				attachment
 			})), [attachments, t]);`
 			},
@@ -641,7 +595,9 @@ function flattenText(blocks) {
 			},
 			{
 				note: "rail renders a type tile for file items instead of an img",
-				old: `							children: [(0, react_jsx_runtime.jsx)("button", {
+				old: `						children: items.map((item) => (0, react_jsx_runtime.jsxs)("div", {
+							className: AttachmentRail_module_css_default.item,
+							children: [(0, react_jsx_runtime.jsx)("button", {
 								type: "button",
 								className: AttachmentRail_module_css_default.thumbnail,
 								title: labels.open,
@@ -652,25 +608,82 @@ function flattenText(blocks) {
 									src: item.previewUrl,
 									alt: item.alt
 								})
-							}), (0, react_jsx_runtime.jsx)("button", {`,
-				new: `							children: [(0, react_jsx_runtime.jsx)("button", {
+							}), (0, react_jsx_runtime.jsx)("button", {
 								type: "button",
-								className: AttachmentRail_module_css_default.thumbnail,
-								title: item.kind === "file" ? item.removeLabel : labels.open,
+								className: AttachmentRail_module_css_default.remove,
+								"aria-label": item.removeLabel,
+								onClick: () => {
+									onRemove(item);
+								},
+								children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconCloseFill14, { size: 12 })
+							})]
+						}, item.id))
+					}),`,
+				new: `						children: items.map((item) => item.kind === "file" ? (0, react_jsx_runtime.jsxs)("div", {
+							className: AttachmentRail_module_css_default.item,
+							style: { flex: "0 0 auto", width: "auto", height: "auto" },
+							children: [(0, react_jsx_runtime.jsx)("button", {
+								type: "button",
+								style: {
+									display: "inline-flex",
+									alignItems: "center",
+									gap: "8px",
+									padding: "5px 10px 5px 5px",
+									borderRadius: "12px",
+									background: "rgba(127,127,127,0.10)",
+									border: "1px solid rgba(127,127,127,0.16)",
+									cursor: "default",
+									maxWidth: "230px",
+									minWidth: 0
+								},
+								title: item.removeLabel,
 								onClick: () => {
 									onOpen(item);
 								},
-								children: item.kind === "file" ? (0, react_jsx_runtime.jsx)("span", {
-									style: { display: "inline-flex", alignItems: "center", gap: "6px", padding: "4px", maxWidth: "180px", minWidth: "0" },
-									children: [(0, react_jsx_runtime.jsx)(FileTypeTile, { name: item.fileName }), (0, react_jsx_runtime.jsx)("span", {
-										style: { fontSize: "11px", lineHeight: "14px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
-										children: item.fileLabel
+								children: [(0, react_jsx_runtime.jsx)(FileTypeTile, { name: item.fileName, size: 28 }), (0, react_jsx_runtime.jsx)("span", {
+									style: { display: "flex", flexDirection: "column", minWidth: 0, textAlign: "left" },
+									children: [(0, react_jsx_runtime.jsx)("span", {
+										style: { fontSize: "12px", lineHeight: "16px", color: "var(--dsw-alias-label-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "150px" },
+										children: item.fileName
+									}), (0, react_jsx_runtime.jsx)("span", {
+										style: { fontSize: "10px", lineHeight: "14px", color: "var(--dsw-alias-label-tertiary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
+										children: item.fileTypeLabel
 									})]
-								}) : (0, react_jsx_runtime.jsx)("img", {
+								})]
+							}), (0, react_jsx_runtime.jsx)("button", {
+								type: "button",
+								className: AttachmentRail_module_css_default.remove,
+								style: { opacity: 1 },
+								"aria-label": item.removeLabel,
+								onClick: () => {
+									onRemove(item);
+								},
+								children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconCloseFill14, { size: 12 })
+							})]
+						}, item.id) : (0, react_jsx_runtime.jsxs)("div", {
+							className: AttachmentRail_module_css_default.item,
+							children: [(0, react_jsx_runtime.jsx)("button", {
+								type: "button",
+								className: AttachmentRail_module_css_default.thumbnail,
+								title: labels.open,
+								onClick: () => {
+									onOpen(item);
+								},
+								children: (0, react_jsx_runtime.jsx)("img", {
 									src: item.previewUrl,
 									alt: item.alt
 								})
-							}), (0, react_jsx_runtime.jsx)("button", {`
+							}), (0, react_jsx_runtime.jsx)("button", {
+								type: "button",
+								className: AttachmentRail_module_css_default.remove,
+								"aria-label": item.removeLabel,
+								onClick: () => {
+									onRemove(item);
+								},
+								children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconCloseFill14, { size: 12 })
+							})]
+						}, item.id))
+					}),`
 			},
 			{
 				note: "MessageImages renders file chips; type-tile helpers added",
@@ -726,93 +739,57 @@ function flattenText(blocks) {
 				default: return ext.slice(0, 1) || "F";
 			}
 		}
-		/** Document-sheet file-type icon: a light page with a folded corner and a brand badge glyph. */
-		function FileTypeTile({ name }) {
+		/** Compact app-style file-type icon: a rounded brand tile with the brand letter and a subtle gloss. */
+		function FileTypeTile({ name, size = 28 }) {
 			const ext = fileExtensionOf(name) || "FILE";
 			const glyph = fileGlyphOf(ext);
 			const color = fileTypeColor(ext);
-			const shortExt = ext.length > 5 ? ext.slice(0, 5) : ext;
 			return (0, react_jsx_runtime.jsx)("span", {
-				style: { position: "relative", display: "inline-block", width: "34px", height: "40px", flex: "none" },
-				children: [
-					(0, react_jsx_runtime.jsx)("span", {
-						style: {
-							position: "absolute",
-							inset: 0,
-							background: "linear-gradient(160deg, #fcfdfe 0%, #eef1f4 100%)",
-							border: "1px solid rgba(15,23,42,0.12)",
-							borderRadius: "4px",
-							boxShadow: "0 1px 2px rgba(15,23,42,0.10)"
-						}
-					}),
-					(0, react_jsx_runtime.jsx)("span", {
-						style: {
-							position: "absolute",
-							top: 0,
-							right: 0,
-							width: "11px",
-							height: "11px",
-							background: "linear-gradient(225deg, #ffffff 0%, #dde2e8 100%)",
-							clipPath: "polygon(0 0, 100% 0, 100% 100%)",
-							borderBottomLeftRadius: "2px"
-						}
-					}),
-					(0, react_jsx_runtime.jsx)("span", {
-						style: {
-							position: "absolute",
-							left: "8px",
-							top: "9px",
-							width: "18px",
-							height: "18px",
-							background: color,
-							color: "#ffffff",
-							borderRadius: "3px",
-							display: "inline-grid",
-							placeItems: "center",
-							fontWeight: 800,
-							fontSize: "12px",
-							lineHeight: 1,
-							boxShadow: "0 1px 2px rgba(15,23,42,0.25)"
-						},
-						children: glyph
-					}),
-					(0, react_jsx_runtime.jsx)("span", {
-						style: {
-							position: "absolute",
-							left: 0,
-							right: 0,
-							bottom: "3px",
-							textAlign: "center",
-							fontSize: "7px",
-							fontWeight: 700,
-							letterSpacing: "0.01em",
-							textTransform: "uppercase",
-							color: "rgba(15,23,42,0.55)",
-							overflow: "hidden",
-							textOverflow: "ellipsis",
-							whiteSpace: "nowrap",
-							padding: "0 2px",
-							boxSizing: "border-box"
-						},
-						children: shortExt
-					})
-				]
+				style: {
+					flex: "none",
+					display: "inline-grid",
+					placeItems: "center",
+					width: String(size) + "px",
+					height: String(size) + "px",
+					borderRadius: String(Math.round(size * 0.25)) + "px",
+					background: \`linear-gradient(150deg, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0.08) 45%, rgba(0,0,0,0.14) 100%), \${color}\`,
+					color: "#ffffff",
+					fontWeight: 800,
+					fontSize: String(Math.round(size * 0.44)) + "px",
+					lineHeight: 1,
+					boxShadow: "inset 0 1px 0 rgba(255,255,255,0.28), 0 1px 2px rgba(15,23,42,0.14)"
+				},
+				children: glyph
 			});
 		}
-		/** One generic-file attachment chip shown in message history (tile + name + size, path on hover). */
+		/** One generic-file attachment card shown in message history (icon + name + type/size, path on hover). */
 		function FileAttachmentChip({ file }) {
 			const name = typeof file !== "undefined" && file !== null && typeof file.name === "string" && file.name !== "" ? file.name : "（未命名文件）";
 			const size = typeof file !== "undefined" && file !== null && typeof file.bytes === "number" ? formatAttachmentSize(file.bytes) : "";
-			return (0, react_jsx_runtime.jsx)("div", {
-				className: MessageImage_module_css_default.frame,
+			const type = (fileExtensionOf(name) || "FILE") + (size !== "" ? " · " + size : "");
+			return (0, react_jsx_runtime.jsx)("span", {
+				style: {
+					display: "inline-flex",
+					alignItems: "center",
+					gap: "8px",
+					padding: "6px 12px 6px 6px",
+					borderRadius: "12px",
+					background: "rgba(127,127,127,0.10)",
+					border: "1px solid rgba(127,127,127,0.16)",
+					maxWidth: "260px",
+					minWidth: 0
+				},
 				title: typeof file !== "undefined" && file !== null && typeof file.path === "string" ? file.path : void 0,
-				children: (0, react_jsx_runtime.jsx)("span", {
-					style: { display: "inline-flex", alignItems: "center", gap: "6px", padding: "4px", maxWidth: "240px", minWidth: "0" },
-					children: [(0, react_jsx_runtime.jsx)(FileTypeTile, { name }), (0, react_jsx_runtime.jsx)("span", {
-						style: { fontSize: "12px", lineHeight: "18px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
-						children: name + (size !== "" ? "（" + size + "）" : "")
+				children: [(0, react_jsx_runtime.jsx)(FileTypeTile, { name, size: 28 }), (0, react_jsx_runtime.jsx)("span", {
+					style: { display: "flex", flexDirection: "column", minWidth: 0 },
+					children: [(0, react_jsx_runtime.jsx)("span", {
+						style: { fontSize: "13px", lineHeight: "18px", color: "var(--dsw-alias-label-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "180px" },
+						children: name
+					}), (0, react_jsx_runtime.jsx)("span", {
+						style: { fontSize: "11px", lineHeight: "15px", color: "var(--dsw-alias-label-tertiary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
+						children: type
 					})]
-				})
+				})]
 			});
 		}
 		/** Historical message-image/file slot entry. */
@@ -833,7 +810,7 @@ function flattenText(blocks) {
 				})
 			] });
 		}`
-			}
+			},
 		]
-	}
+	},
 ];
