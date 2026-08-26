@@ -41,6 +41,19 @@ dsh-periscope does two things:
 
 ---
 
+## 📸 UI preview
+
+**Generic file attachment cards** (composer rail / message history, Codex-style)
+
+| Before | After |
+| --- | --- |
+| <img src="assets/attachment-before.png" width="220" alt="Before: document sheet + heavy frame" /> | <img src="assets/attachment-card.png" width="420" alt="After: natural attachment card" /> |
+
+> Left: the first version (document-sheet icon inside a heavy frame). Right: the
+> current version — a rounded app-style icon (brand letter W/X/P…), file name, a
+> second line with type/size, and an always-visible remove button, looking like
+> a native software component.
+
 ## ⚙️ How it works
 
 ### 1. Vision routing
