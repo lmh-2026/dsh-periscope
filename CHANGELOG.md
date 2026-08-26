@@ -1,43 +1,36 @@
+## [0.3.1] — 2026-08-26
+
+### 美化
+- 文件附件图标升级为**文档纸张 + 品牌徽标**风格（白色文档页 + 折角 + 彩色品牌字母，如 Word 蓝色 W、Excel 绿色 X、PDF 红色 P），替代原来的扁平色块文字。
 # Changelog
 
 All notable changes to this project are documented here. The format is based
 on [Keep a Changelog](https://keepachangelog.com/), and this project adheres
 to [Semantic Versioning](https://semver.org/).
 
-## [0.3.0] — 2026-08-26
+## [0.3.0] 鈥?2026-08-26
 
-### 通用文件附件（generic file attachments）
+### 閫氱敤鏂囦欢闄勪欢锛坓eneric file attachments锛?
+DSH 鍘熺増瀵硅瘽鍙兘鎷栧叆鍥剧墖锛圥NG/JPG/WebP/GIF锛夛紝鎷栧叆 Word/Excel/PDF/txt 绛夐潪鍥剧墖鏂囦欢浼氳褰撲綔鍥剧墖鎷掔粷銆傛湰鐗堟湰涓?DSH 澧炲姞**閫氱敤鏂囦欢闄勪欢**鑳藉姏锛?
+- **鎷栧叆/绮樿创浠绘剰鏂囦欢** 鈫?杈撳叆妗嗗嚭鐜板甫鏂囦欢绫诲瀷鍥炬爣鐨勯檮浠跺崱鐗囷紙褰╄壊鎵╁睍鍚嶆柟鍧?+ 鏂囦欢鍚?+ 澶у皬锛屽彲鍒犻櫎锛夛紱
+- **鍙戦€佹椂鏂囦欢闅?prompt 涓婇€?*锛宧ost 鏍￠獙骞?*钀界洏淇濆瓨**鍒?`~/.dsh/attachments/v1/files/`锛堥粯璁ゅ崟鏂囦欢 20 MiB銆佸崟鏉?20 涓€佸崟鏉″悎璁?200 MiB锛夛紱
+- 浼氳瘽涓寔涔呭寲涓?`{type:"file"}` 鍐呭鍧楋紝鍘嗗彶娑堟伅娓叉煋闄勪欢鍗＄墖锛堟偓鍋滄樉绀哄畬鏁磋矾寰勶級锛?- 妯″瀷璇锋眰鏃?file 鍧楁姇褰变负 `[闄勪欢锛氬悕绉帮紙澶у皬锛塡n瀹屾暣璺緞锛氣€` 鏂囨湰锛?*agent 鐢ㄦ枃浠跺伐鍏锋寜璺緞璇诲彇**锛圖eepSeek 瀹樻柟 [Files API 浠呮敮鎸佸浘鐗囨牸寮廬(https://api-docs.deepseek.com/zh-cn/guides/files_api/)锛岄潪鍥剧墖鏂囨。鏃犳硶鐩存帴鍙戠粰妯″瀷锛夛紱
+- 鍥剧墖浠嶈蛋鍘熸湁瑙嗚閫氶亾锛堢缉鐣ュ浘 + vision 妯″瀷璺敱锛夛紝浜掍笉褰卞搷銆?
+璇ュ姛鑳介渶瑕?*鏀瑰姩 DSH 鏍稿績鍖?*锛坵ire 鍗忚銆侀檮浠跺瓨鍌ㄣ€乧omposer銆侀€傞厤鍣級锛屾棤娉曞湪杩愯鏃剁敱鎻掍欢瀹屾垚锛屽洜姝ら殢鍖呮惡甯︼細
 
-DSH 原版对话只能拖入图片（PNG/JPG/WebP/GIF），拖入 Word/Excel/PDF/txt 等非图片文件会被当作图片拒绝。本版本为 DSH 增加**通用文件附件**能力：
-
-- **拖入/粘贴任意文件** → 输入框出现带文件类型图标的附件卡片（彩色扩展名方块 + 文件名 + 大小，可删除）；
-- **发送时文件随 prompt 上送**，host 校验并**落盘保存**到 `~/.dsh/attachments/v1/files/`（默认单文件 20 MiB、单条 20 个、单条合计 200 MiB）；
-- 会话中持久化为 `{type:"file"}` 内容块，历史消息渲染附件卡片（悬停显示完整路径）；
-- 模型请求时 file 块投影为 `[附件：名称（大小）\n完整路径：…]` 文本，**agent 用文件工具按路径读取**（DeepSeek 官方 [Files API 仅支持图片格式](https://api-docs.deepseek.com/zh-cn/guides/files_api/)，非图片文档无法直接发给模型）；
-- 图片仍走原有视觉通道（缩略图 + vision 模型路由），互不影响。
-
-该功能需要**改动 DSH 核心包**（wire 协议、附件存储、composer、适配器），无法在运行时由插件完成，因此随包携带：
-
-- `patches/manifest.mjs` — 6 个核心文件全部改动的 old→new 清单；
-- `scripts/patch-core.mjs` — `apply` / `revert` / `verify` / `diff`，幂等、带原始备份（`~/.dsh/.dsh-periscope-patch-backup/`）。
-
-使用：
-
+- `patches/manifest.mjs` 鈥?6 涓牳蹇冩枃浠跺叏閮ㄦ敼鍔ㄧ殑 old鈫抧ew 娓呭崟锛?- `scripts/patch-core.mjs` 鈥?`apply` / `revert` / `verify` / `diff`锛屽箓绛夈€佸甫鍘熷澶囦唤锛坄~/.dsh/.dsh-periscope-patch-backup/`锛夈€?
+浣跨敤锛?
 ```bash
-npm run patch:apply     # 或 node scripts/patch-core.mjs apply
-npm run patch:verify    # 检查核心是否已补丁
-npm run patch:revert    # 还原核心文件
-npm run patch:diff      # 查看每处改动
+npm run patch:apply     # 鎴?node scripts/patch-core.mjs apply
+npm run patch:verify    # 妫€鏌ユ牳蹇冩槸鍚﹀凡琛ヤ竵
+npm run patch:revert    # 杩樺師鏍稿績鏂囦欢
+npm run patch:diff      # 鏌ョ湅姣忓鏀瑰姩
 ```
 
-**注意**：补丁针对当前 DSH 核心版本编写；核心升级后需重新 `apply`（脚本会报告版本不匹配的替换项）。这也解释了为何文件附件体验暂时无法做到与模型无关的纯插件化。
-
-### 修复（与文件附件配套）
-
-- 修复文件草稿发送/删除时 `Cannot read properties of undefined (reading 'startsWith')`（`revokePreview` 对无 `previewUrl` 的草稿崩溃）；
-- 客户端侧增加单文件 20 MiB 上限提示，避免超大文件先整读入内存。
-
-## [0.2.0] — 2026-08-22
+**娉ㄦ剰**锛氳ˉ涓侀拡瀵瑰綋鍓?DSH 鏍稿績鐗堟湰缂栧啓锛涙牳蹇冨崌绾у悗闇€閲嶆柊 `apply`锛堣剼鏈細鎶ュ憡鐗堟湰涓嶅尮閰嶇殑鏇挎崲椤癸級銆傝繖涔熻В閲婁簡涓轰綍鏂囦欢闄勪欢浣撻獙鏆傛椂鏃犳硶鍋氬埌涓庢ā鍨嬫棤鍏崇殑绾彃浠跺寲銆?
+### 淇锛堜笌鏂囦欢闄勪欢閰嶅锛?
+- 淇鏂囦欢鑽夌鍙戦€?鍒犻櫎鏃?`Cannot read properties of undefined (reading 'startsWith')`锛坄revokePreview` 瀵规棤 `previewUrl` 鐨勮崏绋垮穿婧冿級锛?- 瀹㈡埛绔晶澧炲姞鍗曟枃浠?20 MiB 涓婇檺鎻愮ず锛岄伩鍏嶈秴澶ф枃浠跺厛鏁磋鍏ュ唴瀛樸€?
+## [0.2.0] 鈥?2026-08-22
 
 - Renamed the plugin to **dsh-periscope** (cordis id `periscope`).
 - Support **multiple text models**: `textModels` now defaults to
@@ -47,14 +40,14 @@ npm run patch:diff      # 查看每处改动
 - Same core mechanism: wraps `llm.resolveModelInfo` (host image-admission
   bypass) and `llm.streamWithRegistration` (per-request vision routing).
 
-## [0.1.1] — 2026-08-22
+## [0.1.1] 鈥?2026-08-22
 
 - Added the host api-proxy image-admission bypass by also wrapping
   `llm.resolveModelInfo`; previously images under a text-only session were
   rejected before reaching the stream (the plugin alone did not fix
   `MODEL_DOES_NOT_SUPPORT_IMAGES`).
 
-## [0.1.0] — 2026-08-22
+## [0.1.0] 鈥?2026-08-22
 
 - Initial release: auto-routes image-bearing requests to a vision-capable
   model on the same provider by wrapping `llm.streamWithRegistration`.
