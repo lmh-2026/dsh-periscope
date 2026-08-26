@@ -711,31 +711,92 @@ function flattenText(blocks) {
 				default: return "#6b7280";
 			}
 		}
-		/** Small colored tile carrying the file extension (the file-type glyph). */
+		/** Brand letter shown in the file-type badge (falls back to the first extension letter). */
+		function fileGlyphOf(ext) {
+			switch (ext) {
+				case "DOC": case "DOCX": case "RTF": case "ODT": return "W";
+				case "XLS": case "XLSX": case "CSV": case "TSV": case "ODS": return "X";
+				case "PPT": case "PPTX": return "P";
+				case "PDF": return "P";
+				case "ZIP": case "RAR": case "7Z": case "GZ": return "Z";
+				case "MD": case "TXT": case "LOG": case "INI": case "YAML": case "YML": case "JSON": return "T";
+				case "PNG": case "JPG": case "JPEG": case "GIF": case "WEBP": case "SVG": case "BMP": case "AVIF": case "ICO": return "I";
+				case "MP3": case "WAV": case "FLAC": return "A";
+				case "MP4": case "MOV": case "AVI": case "MKV": return "V";
+				default: return ext.slice(0, 1) || "F";
+			}
+		}
+		/** Document-sheet file-type icon: a light page with a folded corner and a brand badge glyph. */
 		function FileTypeTile({ name }) {
 			const ext = fileExtensionOf(name) || "FILE";
+			const glyph = fileGlyphOf(ext);
+			const color = fileTypeColor(ext);
+			const shortExt = ext.length > 5 ? ext.slice(0, 5) : ext;
 			return (0, react_jsx_runtime.jsx)("span", {
-				style: {
-					flex: "none",
-					display: "inline-grid",
-					placeItems: "center",
-					width: "32px",
-					height: "32px",
-					borderRadius: "8px",
-					background: fileTypeColor(ext),
-					color: "#ffffff",
-					fontSize: "9px",
-					fontWeight: 700,
-					letterSpacing: "0.02em",
-					lineHeight: "1",
-					padding: "2px",
-					boxSizing: "border-box",
-					overflow: "hidden",
-					textOverflow: "ellipsis",
-					whiteSpace: "nowrap",
-					textTransform: "uppercase"
-				},
-				children: ext
+				style: { position: "relative", display: "inline-block", width: "34px", height: "40px", flex: "none" },
+				children: [
+					(0, react_jsx_runtime.jsx)("span", {
+						style: {
+							position: "absolute",
+							inset: 0,
+							background: "linear-gradient(160deg, #fcfdfe 0%, #eef1f4 100%)",
+							border: "1px solid rgba(15,23,42,0.12)",
+							borderRadius: "4px",
+							boxShadow: "0 1px 2px rgba(15,23,42,0.10)"
+						}
+					}),
+					(0, react_jsx_runtime.jsx)("span", {
+						style: {
+							position: "absolute",
+							top: 0,
+							right: 0,
+							width: "11px",
+							height: "11px",
+							background: "linear-gradient(225deg, #ffffff 0%, #dde2e8 100%)",
+							clipPath: "polygon(0 0, 100% 0, 100% 100%)",
+							borderBottomLeftRadius: "2px"
+						}
+					}),
+					(0, react_jsx_runtime.jsx)("span", {
+						style: {
+							position: "absolute",
+							left: "8px",
+							top: "9px",
+							width: "18px",
+							height: "18px",
+							background: color,
+							color: "#ffffff",
+							borderRadius: "3px",
+							display: "inline-grid",
+							placeItems: "center",
+							fontWeight: 800,
+							fontSize: "12px",
+							lineHeight: 1,
+							boxShadow: "0 1px 2px rgba(15,23,42,0.25)"
+						},
+						children: glyph
+					}),
+					(0, react_jsx_runtime.jsx)("span", {
+						style: {
+							position: "absolute",
+							left: 0,
+							right: 0,
+							bottom: "3px",
+							textAlign: "center",
+							fontSize: "7px",
+							fontWeight: 700,
+							letterSpacing: "0.01em",
+							textTransform: "uppercase",
+							color: "rgba(15,23,42,0.55)",
+							overflow: "hidden",
+							textOverflow: "ellipsis",
+							whiteSpace: "nowrap",
+							padding: "0 2px",
+							boxSizing: "border-box"
+						},
+						children: shortExt
+					})
+				]
 			});
 		}
 		/** One generic-file attachment chip shown in message history (tile + name + size, path on hover). */
