@@ -71,6 +71,29 @@ dsh plugin --profile web add .\dsh-periscope-0.2.0.tgz
 
 该 provider 的模型目录需同时包含这些文本模型与一个声明了 image 输入的视觉模型（DeepSeek 目录已满足）。✅
 
+## 📎 通用文件附件（0.3.0+）
+
+原版 DSH 对话只能拖入光栅图片（PNG/JPG/WebP/GIF），拖入 Word/Excel/PDF/txt 等非图片文件会被当作图片拒绝（弹"仅支持 PNG、JPG、WebP、GIF 格式的图片"）。从 0.3.0 起，dsh-periscope 随包提供**通用文件附件**能力：
+
+- **拖入/粘贴任意文件** → 输入框上方出现文件附件卡片（彩色扩展名方块 + 文件名 + 大小，可删除）；
+- **发送时文件字节随 prompt 上送**，host 校验并**落盘保存**到 `~/.dsh/attachments/v1/files/`（默认限制：单文件 20 MiB、单条 20 个、单条合计 200 MiB）；
+- 会话持久化为 `{type:"file"}` 内容块，历史消息渲染附件卡片（悬停显示完整路径）；
+- 模型请求时 file 块投影为 `[附件：名称（大小）\n完整路径：…]` 文本，**agent 用文件工具按路径读取**。DeepSeek 官方 [Files API 只支持图片格式](https://api-docs.deepseek.com/zh-cn/guides/files_api/)，非图片文档无法直接发给模型，路径式消费是等价体验（Codex 同款做法）。图片仍走原有缩略图 + 视觉模型通道，互不影响。
+
+该功能需要改动 DSH **核心包**（wire 协议、附件存储、composer、适配器），运行时无法由插件完成，因此随包携带核心补丁与安装器：
+
+- `patches/manifest.mjs` — 6 个受影响核心文件的 old→new 替换清单；
+- `scripts/patch-core.mjs` — `apply` / `revert` / `verify` / `diff`（幂等；原始文件备份在 `~/.dsh/.dsh-periscope-patch-backup/`）。
+
+```bash
+npm run patch:apply     # 或 node scripts/patch-core.mjs apply
+npm run patch:verify    # 确认核心已补丁
+npm run patch:revert    # 还原核心文件
+npm run patch:diff      # 查看每处改动
+```
+
+> ⚠️ 补丁针对编写时的 DSH 核心版本；核心升级后需重新 `apply`（版本不匹配的替换项脚本会明确报错，不会乱改）。
+
 ## 📝 已知边界
 
 - 切换是按请求、按内容发生的：含图轮次跑 vision 模型（含历史），文字轮次跑文本模型。

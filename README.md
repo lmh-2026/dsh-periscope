@@ -97,6 +97,46 @@ row config):
 The provider's catalog must contain the text models and the vision model whose
 entry declares `image` input (the DeepSeek catalog already does). ✅
 
+## 📎 Generic file attachments (0.3.0+)
+
+DSH's composer only accepts raster images (PNG/JPG/WebP/GIF) — dragging in a
+Word/Excel/PDF/txt file is treated as an image and rejected. Since 0.3.0
+dsh-periscope ships the **generic file-attachment** feature:
+
+- **Drag/paste any file** → a file card appears above the composer (colored
+  type tile with the extension, file name, size; removable);
+- **On send** the file bytes ride the prompt, the host validates and **persists
+  them** under `~/.dsh/attachments/v1/files/` (default caps: 20 MiB per file,
+  20 files per message, 200 MiB per message);
+- The conversation stores a durable `{type:"file"}` block and history renders
+  the file card (hover shows the absolute path);
+- When the request reaches the model, the block projects to
+  `[附件：name（size）\n完整路径：…]` text and the **agent reads the file with
+  its own tools**. DeepSeek's official [Files API only accepts image
+  formats](https://api-docs.deepseek.com/guides/files_api/), so non-image
+  documents cannot be handed to the model directly; path-based consumption is
+  the equivalent (Codex-style) experience. Images keep the existing thumbnail +
+  vision-model path.
+
+Because the feature touches DSH core packages (wire schema, attachment store,
+composer, adapter) that a Cordis plugin cannot extend at runtime, the package
+ships the exact source-level changes and an installer:
+
+- `patches/manifest.mjs` — old→new replacements for the 6 affected core files;
+- `scripts/patch-core.mjs` — `apply` / `revert` / `verify` / `diff`
+  (idempotent, backs up originals under `~/.dsh/.dsh-periscope-patch-backup/`).
+
+```bash
+npm run patch:apply     # or: node scripts/patch-core.mjs apply
+npm run patch:verify    # confirm the core is patched
+npm run patch:revert    # restore the original core files
+npm run patch:diff      # review every change
+```
+
+> ⚠️ The patches target the DSH core version they were written against. After a
+> core upgrade, re-run `apply` (the script reports any version-mismatched
+> replacement instead of guessing).
+
 ## 📝 Notes
 
 - The switch is per-request and content-driven: image turns run on the vision

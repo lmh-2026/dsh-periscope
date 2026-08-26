@@ -1,17 +1,3 @@
-# Dependencies
-node_modules/
-
-# Packed tarballs (built locally, not committed)
+﻿node_modules/
 *.tgz
 
-# Logs
-*.log
-npm-debug.log*
-pnpm-debug.log*
-yarn-*.log
-
-# Editor / OS
-.vscode/
-.idea/
-.DS_Store
-Thumbs.db
