@@ -1,103 +1,102 @@
-[**简体中文**](./README.md) | [English](./README.en.md)
+<div align="center">
 
 # 🔭 dsh-periscope
 
-> 一个为 **[DSH Desktop 桌面端](https://www.dshdesktop.cn/)** 打造的插件，让纯文本模型无需切换就能「看」图，并把 **任意文件**（Word / Excel / PDF / txt / zip…）拖进对话作为附件交给 agent 读取。本项目**完全由 AI 结对编程（vibecoding）编写**。
+**让 DSH Desktop 的纯文本模型也能「看」图，并把任意文件拖进对话交给 agent 读取。**
 
-![文件附件卡片展示](docs/attachment-cards.png)
+<br />
 
----
+<p>
+  <a href="https://www.dshdesktop.cn/"><img src="https://img.shields.io/badge/目标平台-DSH%20Desktop-4D6BFE?style=for-the-badge&logo=deepseek&logoColor=white" alt="DSH Desktop" /></a>
+  <img src="https://img.shields.io/badge/Platform-Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white" alt="Windows" />
+  <img src="https://img.shields.io/badge/Node.js-22%2B-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" />
+  <a href="./LICENSE"><img src="https://img.shields.io/github/license/lmh-2026/dsh-periscope.svg?style=for-the-badge" alt="License MIT" /></a>
+</p>
 
-## ⚠️ 适配范围（重要）
+<p>
+  <a href="https://github.com/lmh-2026/dsh-periscope/stargazers"><img src="https://img.shields.io/github/stars/lmh-2026/dsh-periscope.svg?style=social" alt="Stars" /></a>
+  <a href="https://github.com/lmh-2026/dsh-periscope/forks"><img src="https://img.shields.io/github/forks/lmh-2026/dsh-periscope.svg?style=social" alt="Forks" /></a>
+  <a href="https://github.com/lmh-2026/dsh-periscope/issues"><img src="https://img.shields.io/github/issues/lmh-2026/dsh-periscope.svg?style=social" alt="Issues" /></a>
+</p>
 
-dsh-periscope **只适配 [DSH Desktop 桌面客户端](https://www.dshdesktop.cn/)**，且只适配打包为单个 `app.asar` 的发行形态。
+<br />
 
-- ❌ **不适用于** DSH 的 Web / CLI / 源码运行形态——那些形态下核心以松散文件加载，本插件的历史补丁方式与桌面端打包形态不通用。
-- ⚠️ **DSH 客户端升级可能影响本插件**：每次 DSH 更新都会重新打包 `app.asar`，因此**升级后文件附件功能很可能失效**，需要按下方「使用方法」重新执行一次 `apply-file-attachments.ps1` 重打包。
+<p align="center">
+  <picture>
+    <img src="docs/attachment-cards.png" alt="文件附件卡片" width="90%" />
+  </picture>
+</p>
 
----
+<br />
 
-## ✨ 它做了什么
+**🇨🇳 简体中文** · [English](./README.en.md)
 
-1. **视觉路由（periscope）** — 会话默认停留在 `deepseek-v4-flash` / `deepseek-v4-pro`，所有**含图请求自动路由**到官方视觉模型 `deepseek-v4-flash-vision-exp`（同一 provider）。纯文字请求零开销走文本模型，无需手动切换、无第三方视觉模型、无 OCR，图片**原样**发给 DeepSeek 官方视觉 API。
-2. **通用文件附件** — 原版 DSH 只能拖入光栅图片（PNG/JPG/WebP/GIF），拖入非图片文件会被当作图片拒绝。本插件让 DSH 支持**任意文件附件**：拖入/粘贴非图片文件即出现**附件卡片**（文件类型图标 + 文件名 + 大小），发送后文件**落盘保存**，会话持久化为附件块，agent 用文件工具**按路径读取**。
-
-![附件卡片类型图标](docs/attachment-cards.png)
-
----
-
-## 🧰 工作原理
-
-文件附件功能的实现位置（wire 协议、附件存储、composer、模型适配器）是 DSH **核心包**，而核心的 `session.prompt` wire 校验 schema 是 `dsh-host-apiproxy` 模块内部常量，第三方插件在运行时**无法扩展**。因此本插件随包携带对 DSH 桌面端核心的**补丁**（见下）。
-
-数据流：
-
-```text
-拖入/粘贴任意文件 📎
-  ▼
-composer 附件卡片（彩色类型图标 + 文件名 + 大小，可删除）
-  ▼
-发送 ── 文件字节(base64) 作为 {type:"file"} 部件随 prompt 上送
-  ▼
-host 校验并落盘 ── ~/.dsh/attachments/v1/files/<sha256>-<文件名>
-  ▼
-会话持久化 ── {type:"file", file:{name, size, path, …}} 内容块（历史渲染附件卡片）
-  ▼
-模型请求 ── file 块投影为文本：
-  [附件：名称（大小）\n完整路径：<绝对路径>\n请读取该文件内容后继续。]
-  ▼
-agent 用文件工具按路径读取并处理 🔧
-```
-
-**为什么不把文件直接发给模型？** DeepSeek 官方 [Files API 仅支持 JPEG/PNG/GIF/WebP 图片](https://api-docs.deepseek.com/zh-cn/guides/files_api/)，非图片文档无法直接送入模型。路径式消费是 agent 架构下的等价体验（Codex 同款做法）：文件真实落盘，agent 用 `read`/`bash`/`pwsh` 等工具读取（docx/xlsx/pdf 等二进制格式 agent 会自行解析）。
-
-**默认限制**（可通过 `dsh-attachment-local` 配置调整）：单文件 20 MiB、单条消息 20 个文件、单条合计 200 MiB；客户端与 host 双重校验。
+</div>
 
 ---
 
-## 📦 使用方法
+## ✨ 特性
 
-> 本方式针对 **DSH Desktop 桌面端（`app.asar` 打包形态）**。请在 **Windows** 上操作，且**每次 DSH 升级后都需要重做一次**。
+| 能力 | 说明 |
+| --- | --- |
+| 🔀 **视觉自动路由** | 纯文本会话里贴图，无需手动切换——含图请求自动改派官方视觉模型 `deepseek-v4-flash-vision-exp`，文字请求零开销走文本模型 |
+| 📎 **通用文件附件** | 原版只收图片；本插件支持拖入/粘贴**任意文件**（docx/xlsx/pdf/txt/zip…）→ 附件卡片 → 落盘 → agent 按路径读取 |
+| 🗂️ **文件类型图标** | 附件卡片按扩展名显示彩色类型方块（Word 蓝 W / Excel 绿 X / PDF 红 P…） |
+| 💾 **持久化落盘** | 文件保存到 `~/.dsh/attachments/v1/files/`，会话历史保留附件块与完整绝对路径 |
+| 🛡️ **崩溃修复** | 修复文件草稿发送/删除时 `Cannot read properties of undefined (reading 'startsWith')` |
+| 🧩 **随包核心补丁** | 6 个核心文件的替换清单 + 一键原位重打包器，改的是 DSH 桌面端核心 |
+
+---
+
+## 🚀 快速开始
+
+> **只适配 [DSH Desktop 桌面客户端](https://www.dshdesktop.cn/)**（以单个 `app.asar` 打包核心的形态）。请在 **Windows** 上操作，且**每次 DSH 升级后都要重做一次**。
 
 ### 1. 完全退出 DSH Desktop
 
-关闭所有 DSH 窗口，并**右键系统托盘图标 → 退出**（确保进程全部结束）。脚本会自己检查，没关会中止。
+关闭所有窗口，右键**系统托盘图标 → 退出**（确保进程全部结束，脚本会自己检查）。
 
 ### 2. 运行一键重打包脚本
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass -Force
-cd C:\Users\hndsj\Desktop\dsh-periscope-repack   # 或你 clone/解压本仓库的目录
+cd C:\Users\hndsj\Desktop\dsh-periscope-repack   # 或你 clone / 解压本仓库的目录
 .\apply-file-attachments.ps1
 ```
 
-脚本会依次：检查 DSH 已退出 → 选 node → 校验补丁文件 → **备份 `app.asar` → 原位打入 6 个补丁核心文件**（保留原生模块）→ 用官方 asar 校验。
+脚本依次执行：**退出检测 → 选 node → 校验补丁 → 自动备份 `app.asar` → 原位打入 6 个补丁核心文件（保留原生模块）→ 官方 asar 校验**。
 
-期望看到：`重打包完成: ... 打进补丁文件: 6 / 6`，最后 `✅ 完成！`。
+看到的成功输出：
+
+```text
+重打包完成: <大小> 字节（原 <大小>）  打进补丁文件: 6 / 6
+✅ 完成！
+```
 
 ### 3. 重新打开 DSH
 
-重新启动 DSH，即可拖入/粘贴任意文件测试。
-
-> node 路径不一定适用于所有环境；脚本已内置 DSH runtime 与 Codex runtime 两个候选，找不到时请改 `scripts/apply-file-attachments.ps1` 里的 `$node`。
+拖入 / 粘贴一个非图片文件，即可看到带类型图标的附件卡片；发送后 agent 会按路径读取它。
 
 ---
 
-## 🛠️ 核心补丁（patches / scripts）
+## 📖 工作原理
 
-本插件改动 DSH 的 6 个核心包。仓库同时随包携带**补丁清单**与**原位重打包器**：
+文件附件功能位于 DSH **核心包**（wire 协议、附件存储、composer、模型适配器），而核心校验 schema 是 `dsh-host-apiproxy` 模块内部的常量，第三方插件运行时**无法扩展**——因此本插件随包携带对桌面端核心的**补丁**。
 
-| 文件 | 说明 |
-| --- | --- |
-| `patches/manifest.mjs` | 6 个核心文件的 old→new 替换清单（约 30 处，供审查/演进用） |
-| `patches/asar-patched/` | 已打好补丁的 6 个核心文件（重打包时直接打进 `app.asar`） |
-| `scripts/repack-inplace.mjs` | 原位重打包：只替换这 6 个文件，完整保留其余文件字节与原生模块结构 |
-| `scripts/apply-file-attachments.ps1` | 一键入口：退出检测 → 备份 → 重打包 → 校验 |
-| `scripts/patch-core.mjs` | apply / revert / verify / diff 安装器（面向松散核心的历史方式，见下） |
+```text
+拖入/粘贴任意文件 📎
+  → composer 附件卡片（类型图标 + 文件名 + 大小，可删除）
+  → 发送：文件字节(base64) 作为 {type:"file"} 部件随 prompt 上送
+  → host 校验并落盘：~/.dsh/attachments/v1/files/<sha256>-<文件名>
+  → 会话持久化：{type:"file", file:{name, size, path, …}} 内容块（历史渲染附件卡片）
+  → 模型请求：file 块投影为文本
+      [附件：名称（大小）\n完整路径：<绝对路径>\n请读取该文件内容后继续。]
+  → agent 用文件工具按路径读取并处理 🔧
+```
 
-涉及的 6 个核心包：`@deepseek-ai/dsh-attachment`、`dsh-attachment-local`、`dsh-host-apiproxy`、`dsh-llm-deepseek`、`dsh-client-ui-conversation`、`dsh-client-ui-attachment`。
+**为什么不是把文件直接发给模型？** DeepSeek 官方 [Files API 仅支持 JPEG/PNG/GIF/WebP 图片](https://api-docs.deepseek.com/zh-cn/guides/files_api/)，非图片文档无法直接送入模型。路径式消费是 agent 架构下的等价体验（Codex 同款做法）：文件真实落盘，agent 用 `read`/`bash`/`pwsh` 等工具读取。
 
-> 面向**松散核心**的安装器 `scripts/patch-core.mjs apply` 仍在仓库中（适用于非打包形态），但**桌面端 `app.asar` 形态请用上面的原位重打包**——naive 的 `asar extract→pack` 会孤立 unpacked 原生模块，导致 DSH 无法启动。
+**默认限制**（可通过 `dsh-attachment-local` 配置调整）：单文件 **20 MiB**、单条消息 **20 个文件**、单条合计 **200 MiB**；客户端与 host 双重校验。
 
 ---
 
@@ -105,7 +104,7 @@ cd C:\Users\hndsj\Desktop\dsh-periscope-repack   # 或你 clone/解压本仓库�
 
 官方 DeepSeek 无需任何设置即开箱即用：
 
-| 字段 | 默认 | 说明 |
+| 字段 | 默认值 | 说明 |
 | --- | --- | --- |
 | `provider` | `deepseek-official` | 承载模型的路由 provider |
 | `textModels` | `["deepseek-v4-flash", "deepseek-v4-pro"]` | 含图请求会被路由到视觉模型的文本模型 |
@@ -121,23 +120,57 @@ cd C:\Users\hndsj\Desktop\dsh-periscope-repack   # 或你 clone/解压本仓库�
     visionModel: deepseek-v4-flash-vision-exp
 ```
 
-该 provider 的模型目录需同时包含这些文本模型与一个声明了 image 输入的视觉模型（DeepSeek 目录已满足）。✅
+该 provider 的模型目录需同时包含这些文本模型与一个声明了 `image` 输入的视觉模型（DeepSeek 目录已满足）✅
 
 ---
 
-## ⚠️ 潜在风险与注意事项
+## 📁 仓库结构
 
-请在使用前充分了解：**本插件通过直接修改 DSH 桌面端的核心文件来工作，属于非官方行为。**
+| 路径 | 说明 |
+| --- | --- |
+| `patches/manifest.mjs` | 6 个核心文件的 old→new 替换清单（约 30 处，供审查/演进） |
+| `patches/asar-patched/` | 已打补丁的 6 个核心文件（重打包时直接打进 `app.asar`） |
+| `scripts/repack-inplace.mjs` | 原位重打包：只替换 6 个文件，保留其余文件字节与原生模块结构 |
+| `scripts/apply-file-attachments.ps1` | 一键入口：退出检测 → 备份 → 重打包 → 校验 |
+| `scripts/patch-core.mjs` | `apply` / `revert` / `verify` / `diff`（面向松散核心的历史方式） |
+| `lib/` · `cordis.patch.yml` | 插件本体与 DSH 补丁声明 |
+
+涉及的 6 个核心包：`@deepseek-ai/dsh-attachment`、`dsh-attachment-local`、`dsh-host-apiproxy`、`dsh-llm-deepseek`、`dsh-client-ui-conversation`、`dsh-client-ui-attachment`。
+
+---
+
+## ❓ FAQ
+
+**Q：DSH 升级后文件附件不能用了？**
+A：正常。DSH 每次升级都会重新打包 `app.asar`，功能随之失效。重新运行一次 `apply-file-attachments.ps1` 即可（升级前先备份 `app.asar`）。
+
+**Q：用官方 `asar extract→pack` 行不行？**
+A：不行。naive 的 `extract→pack` 会孤立 unpacked 原生模块（conpty / sharp / koffi），导致 DSH 无法启动。请使用仓库自带的**原位重打包器**。
+
+**Q：支持 Web / CLI / 源码形态吗？**
+A：不支持。本插件只适配 DSH Desktop 桌面端以单个 `app.asar` 打包核心的形态。
+
+**Q：为什么非图片文件要 agent 按路径读，而不是直接发给模型？**
+A：DeepSeek 官方 Files API 只接受图片。路径式消费是 agent 架构下的等价体验。
+
+**Q：node 路径找不到？**
+A：脚本内置了 DSH runtime 与 Codex runtime 两个候选；仍不行时改 `scripts/apply-file-attachments.ps1` 里的 `$node`。
+
+---
+
+## ⚠️ 风险与免责声明
+
+**本插件通过直接修改 DSH 桌面端的核心文件来工作，属于非官方行为。** 请在使用前充分了解：
 
 | 风险 | 说明 |
 | --- | --- |
-| 🔄 **DSH 升级会失效** | DSH 更新会重新打包 `app.asar`，文件附件功能随之失效；需重新执行一次 `apply-file-attachments.ps1`。升级前记得先备份 `app.asar`。 |
-| 💥 **损坏与不可启动** | 若重打包有误或补丁与新版核心不匹配，DSH 可能无法启动。**脚本每次都会先备份 `app.asar` → `app.asar.bak`**；出问题按下方还原即可。 |
-| 🧩 **内核不匹配** | 补丁针对编写时的 DSH 核心版本；核心升级后替换项可能对不上，属正常，需按新版核心重新生成补丁。 |
-| 🔬 **非官方行为** | 修改的是 DSH 核心文件而非插件 API。DSH 官方不承诺稳定；长期看更希望 DSH 上游原生支持文件附件。 |
-| 💾 **本地文件落盘** | 附件会以明文保存到 `~/.dsh/attachments/v1/files/`，文件路径与会话块会持久化；注意隐私与磁盘占用。 |
-| 📎 **非图片需 agent 读取** | 非图片文件由 agent 按路径读取（DeepSeek API 不支持非图片格式）；`read_image` 工具自身的准入不受影响。 |
-| 🧪 **仅 Windows 桌面端** | 当前重打包脚本面向 Windows + `app.asar` 形态；其他平台/形态不适用。 |
+| 🔄 **DSH 升级即失效** | 升级重新打包 `app.asar`，功能随之失效，需重跑脚本。 |
+| 💥 **损坏与不可启动** | 重打包有误或补丁与新版核心不匹配时 DSH 可能无法启动。脚本每次自动备份 `app.asar` → `app.asar.bak`。 |
+| 🧩 **内核不匹配** | 补丁针对编写时的核心版本；升级后替换项可能对不上，需按新版核心重新生成。 |
+| 🔬 **非官方行为** | 修改的是核心文件而非插件 API；DSH 官方不承诺稳定。 |
+| 💾 **本地落盘** | 附件明文保存到 `~/.dsh/attachments/v1/files/`，路径与块会持久化，注意隐私与磁盘占用。 |
+| 📎 **非图片需 agent 读** | 非图片文档由 agent 按路径读取；`read_image` 工具自身的准入不受影响。 |
+| 🧪 **仅 Windows 桌面端** | 当前脚本面向 Windows + `app.asar` 形态。 |
 
 **还原方法**（DSH 完全退出后运行）：
 
@@ -145,14 +178,16 @@ cd C:\Users\hndsj\Desktop\dsh-periscope-repack   # 或你 clone/解压本仓库�
 Copy-Item "D:\DSH\DSH Desktop\resources\app.asar.bak" "D:\DSH\DSH Desktop\resources\app.asar" -Force
 ```
 
-> 若 DSH 已无法启动，先还原备份（上一步），如首次运行无 `.bak` 可直接在 DSH 官网重新下载覆盖安装。
+> 若 DSH 已无法启动，先还原备份；如首次运行无 `.bak`，直接到 DSH 官网重新下载覆盖安装。
 
 ---
 
-## 📝 已知边界
+## 🗺️ 路线图
 
-- **视觉路由**：切换按请求、按内容发生：含图轮次跑 vision 模型（含历史），文字轮次跑文本模型；请求头日志与 token 计量仍记录文本模型（头在流开始前写入），属已知外观性偏差。不影响 `read_image` 工具自身的准入检查。
-- **文件附件**：非图片文件由 agent 按路径读取；会话导出暂不打包文件字节；核心升级后需重跑 `apply-file-attachments.ps1`。
+- [ ] 面向新版 DSH 核心的自动补丁重生成
+- [ ] 会话导出时打包附件字节
+- [ ] 支持更多平台的桌面端形态
+- [ ] 上游原生支持文件附件（长期方向）
 
 ---
 
@@ -166,7 +201,9 @@ Copy-Item "D:\DSH\DSH Desktop\resources\app.asar.bak" "D:\DSH\DSH Desktop\resour
 
 🐧 **QQ 交流群：332689798**（小鲸子TV）——欢迎扫码加入，**提交 Bug**、交流使用心得：
 
-![QQ 群二维码](docs/qq-group.jpg)
+<p align="center">
+  <img src="docs/qq-group.jpg" alt="QQ 群二维码" width="300" />
+</p>
 
 ⭐ 如果觉得好用，请给项目点个 **Star** 支持一下！你的反馈能帮助它变得更好。
 
