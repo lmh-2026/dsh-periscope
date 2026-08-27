@@ -48,44 +48,44 @@
 
 ---
 
-## 🚀 Quick start
+## 🚀 One-click install (recommended)
 
 > **Only works with the [DSH Desktop client](https://www.dshdesktop.cn/)** (the form where the core is packed into a single `app.asar`). Operate on **Windows**, and **re-do this after every DSH upgrade**.
 
-> Published to npm: [`dsh-periscope@0.3.3`](https://www.npmjs.com/package/dsh-periscope). Install with npm:
+Published to npm: [`dsh-periscope@0.3.3`](https://www.npmjs.com/package/dsh-periscope). The repo ships a one-click `install.ps1` that does "install the bundle + fix the version + repack `app.asar`" in a single step.
 
-```bash
-npm install dsh-periscope
-# or the DSH plugin way:
-dsh plugin --profile web add dsh-periscope
-```
-
-> ⚠️ Note: the npm package **also ships the 6 patched core files and the repack scripts**; after installing you still need to do the in-place `app.asar` repack below to enable file attachments.
-
-### 1. Fully quit DSH Desktop
-
-Close all windows and **right-click the tray icon → Exit** (make sure every process has ended; the script checks this itself).
-
-### 2. Run the one-click repack script
+### A. From GitHub (zip / clone)
 
 ```powershell
+# 1) Fully quit DSH Desktop
+# 2) In the repo dir, run:
 Set-ExecutionPolicy -Scope Process Bypass -Force
-cd C:\Users\hndsj\Desktop\dsh-periscope-repack   # or the dir where you cloned / extracted this repo
-.\apply-file-attachments.ps1
+.\install.ps1
 ```
 
-The script runs: **quit check → pick node → verify patches → auto-backup `app.asar` → in-place inject the 6 patched core files (native modules preserved) → official asar verify**.
+### B. From npm
 
-Success looks like:
-
-```text
-重打包完成: <size> 字节（原 <size>）  打进补丁文件: 6 / 6
-✅ 完成！
+```powershell
+npm install dsh-periscope
+npx dsh-periscope-install
 ```
+
+Or use the DSH plugin entry directly:
+
+```bash
+dsh plugin add dsh-periscope@0.3.3     # exact version -> plugin list shows the right version
+```
+
+**The script does**: quit check → back up `app.asar` → install/update the bundle at the exact version via `dsh plugin add dsh-periscope@<ver>` (bumps the dependency from `^0.2.0` to `^0.3.3`, so the DSH plugin list shows the correct version) → in-place repack `app.asar` with the installed package's `scripts/repack-inplace.mjs` (injects the 6 patched core files, preserving native modules) → verify + prompt to restart.
+
+- Pick a version / profile: `.\install.ps1 -Version 0.3.3 -Profile desktop`
+- Offline (skip npm registry): `.\install.ps1 -FromLocal`
+
+> ⚠️ Key point: the plugin list shows the **locally installed** version. It was stuck at `0.2.0` because the dependency was `^0.2.0` (= `>=0.2.0 <0.3.0`, which can never reach 0.3.x). Installing an **exact version** bypasses that and shows the correct version.
 
 ### 3. Reopen DSH
 
-Drop/paste a non-image file and you'll see an attachment card with the file-type icon; after sending, the agent reads it by path.
+Drop/paste a non-image file and you'll see an attachment card with the file-type icon; after sending, the agent reads it by path. The DSH plugin list should show `dsh-periscope v0.3.3`.
 
 ---
 

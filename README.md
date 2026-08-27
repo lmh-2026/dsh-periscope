@@ -48,44 +48,44 @@
 
 ---
 
-## 🚀 快速开始
+## 🚀 一键安装（推荐）
 
 > **只适配 [DSH Desktop 桌面客户端](https://www.dshdesktop.cn/)**（以单个 `app.asar` 打包核心的形态）。请在 **Windows** 上操作，且**每次 DSH 升级后都要重做一次**。
 
-> 本插件已发布到 npm：[`dsh-periscope@0.3.3`](https://www.npmjs.com/package/dsh-periscope)（[安装](https://www.npmjs.com/package/dsh-periscope)）。用 `npm` 安装只需：
+本插件已发布到 npm：[`dsh-periscope@0.3.3`](https://www.npmjs.com/package/dsh-periscope)。仓库根目录自带一个**一键安装脚本 `install.ps1`**，它会一次性完成「安装 bundle + 修正确版本号 + 重打包 `app.asar`」，用户不必手工拆两步。
 
-```bash
-npm install dsh-periscope
-# 或按 DSH 插件安装方式：
-dsh plugin --profile web add dsh-periscope
-```
-
-> ⚠️ 注意：npm 包内**同样包含** 6 个补丁核心文件与重打包脚本；安装后仍需按下述步骤对 `app.asar` 做一次原位重打包才能启用文件附件。
-
-### 1. 完全退出 DSH Desktop
-
-关闭所有窗口，右键**系统托盘图标 → 退出**（确保进程全部结束，脚本会自己检查）。
-
-### 2. 运行一键重打包脚本
+### 方式 A：从 GitHub 仓库（zip / clone）
 
 ```powershell
+# 1) 完全退出 DSH Desktop
+# 2) 进入仓库目录（解压 zip 或 clone 后的目录），运行：
 Set-ExecutionPolicy -Scope Process Bypass -Force
-cd C:\Users\hndsj\Desktop\dsh-periscope-repack   # 或你 clone / 解压本仓库的目录
-.\apply-file-attachments.ps1
+.\install.ps1
 ```
 
-脚本依次执行：**退出检测 → 选 node → 校验补丁 → 自动备份 `app.asar` → 原位打入 6 个补丁核心文件（保留原生模块）→ 官方 asar 校验**。
+### 方式 B：从 npm 安装
 
-看到的成功输出：
-
-```text
-重打包完成: <大小> 字节（原 <大小>）  打进补丁文件: 6 / 6
-✅ 完成！
+```powershell
+npm install dsh-periscope
+npx dsh-periscope-install
 ```
+
+也可以直接用 DSH 的插件入口：
+
+```bash
+dsh plugin add dsh-periscope@0.3.3     # 精确版本 → 插件列表正确显示版本
+```
+
+**脚本会自动做这几件事**：退出检测 → 备份 `app.asar` → 以精确版本 `dsh plugin add dsh-periscope@<ver>` 安装/更新 bundle（把依赖从 `^0.2.0` 修正为 `^0.3.3`，从而让 DSH 插件列表正确显示版本）→ 用已安装包内的 `scripts/repack-inplace.mjs` 对 `app.asar` 做原位重打包（注入 6 个补丁核心文件，保留原生模块）→ 校验 + 提示重启。
+
+- 手动指定版本 / profile：`.\install.ps1 -Version 0.3.3 -Profile desktop`
+- 离线（不走 npm registry）：`.\install.ps1 -FromLocal`
+
+> ⚠️ 关键点：插件列表显示的是**本地安装**版本。此前停在 `0.2.0` 是因为依赖写成了 `^0.2.0`（`^0.2.0` = `>=0.2.0 <0.3.0`，永远够不到 0.3.x）。用**精确版本**安装即可绕过该限制，让版本号正确显示。
 
 ### 3. 重新打开 DSH
 
-拖入 / 粘贴一个非图片文件，即可看到带类型图标的附件卡片；发送后 agent 会按路径读取它。
+拖入 / 粘贴一个非图片文件，即可看到带类型图标的附件卡片；发送后 agent 会按路径读取它。DSH 插件列表应显示 `dsh-periscope v0.3.3`。
 
 ---
 
