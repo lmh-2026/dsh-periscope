@@ -12,6 +12,7 @@ to [Semantic Versioning](https://semver.org/).
 - 支持 `-Version` / `-Profile` / `-FromLocal` 参数。
 - 新增 `.gitattributes` 保持文本行尾稳定；两个 PowerShell 脚本统一为 UTF-8 带 BOM（Windows PowerShell 5.1 需 BOM 才能解析中文）。
 - README（中/英）「快速开始」改为「一键安装」，并解释「插件列表显示本地版本、`^0.2.0` 导致停在 0.2.0、需精确版本安装」的原因。
+- README（中/英）新增「开关说明：两种功能、两套机制」：澄清视觉路由走插件系统（受滑块开关控制）、文件附件走 `app.asar` 核心补丁（不受开关控制、需 `install.ps1`）。
 
 ## [0.3.3] — 2026-08-27
 

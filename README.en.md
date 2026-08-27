@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 # 🔭 dsh-periscope
 
@@ -45,6 +45,29 @@
 | 💾 **Durable storage** | Files saved under `~/.dsh/attachments/v1/files/`; history keeps the block and the absolute path |
 | 🛡️ **Crash fix** | Fixes `Cannot read properties of undefined (reading 'startsWith')` when sending/removing file drafts |
 | 🧩 **Shipped core patches** | Replacement manifest for 6 core files + a one-click in-place repacker that modifies the DSH Desktop core |
+
+---
+
+## ⚠️ Toggle explained: two features, two mechanisms (important)
+
+People often wonder why the slider in DSH's plugin list doesn't control file attachments. That's because the two features live on **two completely different layers**:
+
+| Feature | Lives on | How it's enabled | Does the plugin-list toggle control it? |
+| --- | --- | --- | --- |
+| 🔀 **Vision routing** | the `dsh-periscope` plugin **bundle** | loaded at startup via the plugin list | ✅ **Yes** — the toggle switches exactly this |
+| 📎 **File attachments** | DSH's **6 core packages** (inside `app.asar`) | `install.ps1` in-place patches `app.asar`; **fixed once packaged** | ❌ **No** |
+
+**Why?**
+
+- **Vision routing is a plugin**: it's loaded at runtime through DSH's plugin system. The plugin-list slider controls whether the `dsh-periscope` bundle is loaded, so it only affects vision routing.
+- **File attachments are a core patch**: DSH core's `session.prompt` wire schema is a **module-internal constant** in `dsh-host-apiproxy` that a third-party plugin **cannot extend at runtime**. Giving DSH an "any file" capability requires **directly modifying the core**, and `app.asar` is packed once — it's **outside the plugin's runtime toggle**.
+
+**What this means in practice**:
+
+- Whether file attachments work depends only on whether `app.asar` **has been patched** (whether `install.ps1` was run). It has **nothing to do with the slider**: patched → turning the slider off leaves file attachments working; not patched → the slider can't help.
+- The slider's visible effect is limited to the **vision-routing** half.
+
+> ✅ So the slider isn't pointless — it just governs **vision routing**. **File attachments need `install.ps1` to patch `app.asar`.** Treat the two separately.
 
 ---
 
