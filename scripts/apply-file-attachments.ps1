@@ -1,4 +1,4 @@
-# dsh-periscope — 一键原位重打包 DSH 桌面端核心（启用文件附件）
+﻿# dsh-periscope — 一键原位重打包 DSH 桌面端核心（启用文件附件）
 # 用法：在 PowerShell 中、且【已完全退出 DSH 桌面版】时运行：  .\apply-file-attachments.ps1
 # 作用：备份 app.asar → 原位打入 6 个补丁核心文件（保留原生模块）→ 校验 → 完成。
 # 说明：node 不行时改 $node 路径；点不到官方 asar 校验时会跳过（不影响落地）。

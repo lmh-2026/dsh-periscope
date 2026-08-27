@@ -9,12 +9,17 @@
                   "patches",
                   "scripts",
                   "docs",
+                  "install.ps1",
+                  "bin",
                   "cordis.patch.yml",
                   "README.md",
                   "README.en.md",
                   "LICENSE",
                   "CHANGELOG.md"
               ],
+    "bin":  {
+                "dsh-periscope-install":  "bin/install.mjs"
+            },
     "scripts":  {
                     "patch:apply":  "node scripts/patch-core.mjs apply",
                     "patch:revert":  "node scripts/patch-core.mjs revert",
