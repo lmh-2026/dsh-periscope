@@ -1,3 +1,6 @@
-﻿node_modules/
+node_modules/
 *.tgz
+
+# these are the shipped patched core files, kept despite the node_modules/ rule
+!patches/asar-patched/node_modules/
 
