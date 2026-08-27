@@ -52,6 +52,16 @@
 
 > **Only works with the [DSH Desktop client](https://www.dshdesktop.cn/)** (the form where the core is packed into a single `app.asar`). Operate on **Windows**, and **re-do this after every DSH upgrade**.
 
+> Published to npm: [`dsh-periscope@0.3.3`](https://www.npmjs.com/package/dsh-periscope). Install with npm:
+
+```bash
+npm install dsh-periscope
+# or the DSH plugin way:
+dsh plugin --profile web add dsh-periscope
+```
+
+> ⚠️ Note: the npm package **also ships the 6 patched core files and the repack scripts**; after installing you still need to do the in-place `app.asar` repack below to enable file attachments.
+
 ### 1. Fully quit DSH Desktop
 
 Close all windows and **right-click the tray icon → Exit** (make sure every process has ended; the script checks this itself).

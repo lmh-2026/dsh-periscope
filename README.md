@@ -52,6 +52,16 @@
 
 > **只适配 [DSH Desktop 桌面客户端](https://www.dshdesktop.cn/)**（以单个 `app.asar` 打包核心的形态）。请在 **Windows** 上操作，且**每次 DSH 升级后都要重做一次**。
 
+> 本插件已发布到 npm：[`dsh-periscope@0.3.3`](https://www.npmjs.com/package/dsh-periscope)（[安装](https://www.npmjs.com/package/dsh-periscope)）。用 `npm` 安装只需：
+
+```bash
+npm install dsh-periscope
+# 或按 DSH 插件安装方式：
+dsh plugin --profile web add dsh-periscope
+```
+
+> ⚠️ 注意：npm 包内**同样包含** 6 个补丁核心文件与重打包脚本；安装后仍需按下述步骤对 `app.asar` 做一次原位重打包才能启用文件附件。
+
 ### 1. 完全退出 DSH Desktop
 
 关闭所有窗口，右键**系统托盘图标 → 退出**（确保进程全部结束，脚本会自己检查）。
