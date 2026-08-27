@@ -160,6 +160,16 @@ This project was **built entirely by AI pair-programming (vibecoding)**: feature
 
 ---
 
+## 📣 Join the group / support the project
+
+🐧 **QQ group: 332689798** (小鲸子TV) — scan the QR code to join, **report bugs**, and share your experience:
+
+![QQ group QR code](docs/qq-group.jpg)
+
+⭐ If you find it useful, please give the project a **Star**! Your feedback helps make it better.
+
+---
+
 ## 📄 License
 
 [MIT](./LICENSE)

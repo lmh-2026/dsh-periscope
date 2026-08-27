@@ -162,6 +162,16 @@ Copy-Item "D:\DSH\DSH Desktop\resources\app.asar.bak" "D:\DSH\DSH Desktop\resour
 
 ---
 
+## 📣 加入交流群 / 支持项目
+
+🐧 **QQ 交流群：332689798**（小鲸子TV）——欢迎扫码加入，**提交 Bug**、交流使用心得：
+
+![QQ 群二维码](docs/qq-group.jpg)
+
+⭐ 如果觉得好用，请给项目点个 **Star** 支持一下！你的反馈能帮助它变得更好。
+
+---
+
 ## 📄 许可证
 
 [MIT](./LICENSE)
