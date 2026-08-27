@@ -4,6 +4,11 @@ All notable changes to this project are documented here. The format is based
 on [Keep a Changelog](https://keepachangelog.com/), and this project adheres
 to [Semantic Versioning](https://semver.org/).
 
+## [0.3.5] — 2026-08-27
+
+### 文档
+- README（中/英）新增「开关说明：两种功能、两套机制」，澄清视觉路由走插件系统（受滑块开关控制）、文件附件走 `app.asar` 核心补丁（不受开关控制、需 `install.ps1`）。README 同步到 npm 包。
+
 ## [0.3.4] — 2026-08-27
 
 ### 新增：一键安装
