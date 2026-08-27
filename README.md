@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 # 🔭 dsh-periscope
 
@@ -52,7 +52,7 @@
 
 > **只适配 [DSH Desktop 桌面客户端](https://www.dshdesktop.cn/)**（以单个 `app.asar` 打包核心的形态）。请在 **Windows** 上操作，且**每次 DSH 升级后都要重做一次**。
 
-本插件已发布到 npm：[`dsh-periscope@0.3.3`](https://www.npmjs.com/package/dsh-periscope)。仓库根目录自带一个**一键安装脚本 `install.ps1`**，它会一次性完成「安装 bundle + 修正确版本号 + 重打包 `app.asar`」，用户不必手工拆两步。
+本插件已发布到 npm：[`dsh-periscope@0.3.4`](https://www.npmjs.com/package/dsh-periscope)。仓库根目录自带一个**一键安装脚本 `install.ps1`**，它会一次性完成「安装 bundle + 修正确版本号 + 重打包 `app.asar`」，用户不必手工拆两步。
 
 ### 方式 A：从 GitHub 仓库（zip / clone）
 
@@ -73,7 +73,7 @@ npx dsh-periscope-install
 也可以直接用 DSH 的插件入口：
 
 ```bash
-dsh plugin add dsh-periscope@0.3.3     # 精确版本 → 插件列表正确显示版本
+dsh plugin add dsh-periscope@0.3.4     # 精确版本 → 插件列表正确显示版本
 ```
 
 **脚本会自动做这几件事**：退出检测 → 备份 `app.asar` → 以精确版本 `dsh plugin add dsh-periscope@<ver>` 安装/更新 bundle（把依赖从 `^0.2.0` 修正为 `^0.3.3`，从而让 DSH 插件列表正确显示版本）→ 用已安装包内的 `scripts/repack-inplace.mjs` 对 `app.asar` 做原位重打包（注入 6 个补丁核心文件，保留原生模块）→ 校验 + 提示重启。

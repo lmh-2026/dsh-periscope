@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 # 🔭 dsh-periscope
 
@@ -52,7 +52,7 @@
 
 > **Only works with the [DSH Desktop client](https://www.dshdesktop.cn/)** (the form where the core is packed into a single `app.asar`). Operate on **Windows**, and **re-do this after every DSH upgrade**.
 
-Published to npm: [`dsh-periscope@0.3.3`](https://www.npmjs.com/package/dsh-periscope). The repo ships a one-click `install.ps1` that does "install the bundle + fix the version + repack `app.asar`" in a single step.
+Published to npm: [`dsh-periscope@0.3.4`](https://www.npmjs.com/package/dsh-periscope). The repo ships a one-click `install.ps1` that does "install the bundle + fix the version + repack `app.asar`" in a single step.
 
 ### A. From GitHub (zip / clone)
 
@@ -73,7 +73,7 @@ npx dsh-periscope-install
 Or use the DSH plugin entry directly:
 
 ```bash
-dsh plugin add dsh-periscope@0.3.3     # exact version -> plugin list shows the right version
+dsh plugin add dsh-periscope@0.3.4     # exact version -> plugin list shows the right version
 ```
 
 **The script does**: quit check → back up `app.asar` → install/update the bundle at the exact version via `dsh plugin add dsh-periscope@<ver>` (bumps the dependency from `^0.2.0` to `^0.3.3`, so the DSH plugin list shows the correct version) → in-place repack `app.asar` with the installed package's `scripts/repack-inplace.mjs` (injects the 6 patched core files, preserving native modules) → verify + prompt to restart.

@@ -1,6 +1,6 @@
 {
     "name":  "dsh-periscope",
-    "version":  "0.3.3",
+    "version":  "0.3.4",
     "description":  "DSH Desktop plugin: keep text-only models (deepseek-v4-flash / deepseek-v4-pro) as the session default and automatically route image-bearing requests to a configured vision model; also ships the generic file-attachment feature (drag/paste any file as a durable attachment the agent reads by path) as core patches, applied to the packaged app.asar via the in-place repacker (scripts/apply-file-attachments.ps1 / scripts/repack-inplace.mjs). Only the DSH Desktop client (dshdesktop.cn) is supported.",
     "type":  "module",
     "main":  "lib/index.js",

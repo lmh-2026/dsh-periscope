@@ -4,6 +4,15 @@ All notable changes to this project are documented here. The format is based
 on [Keep a Changelog](https://keepachangelog.com/), and this project adheres
 to [Semantic Versioning](https://semver.org/).
 
+## [0.3.4] — 2026-08-27
+
+### 新增：一键安装
+- 仓库根目录新增 **`install.ps1`**：退出检测 → 备份 `app.asar` → 以精确版本安装/更新 `dsh-periscope` bundle（修正依赖 `^0.2.0` → `^0.3.4`，让 DSH 插件列表正确显示版本）→ 用已安装包内的 `scripts/repack-inplace.mjs` 对 `app.asar` 做原位重打包 → 校验 + 提示重启。
+- 新增 **npm bin `dsh-periscope-install`**（`bin/install.mjs`），`npx dsh-periscope-install` 即可一键安装。
+- 支持 `-Version` / `-Profile` / `-FromLocal` 参数。
+- 新增 `.gitattributes` 保持文本行尾稳定；两个 PowerShell 脚本统一为 UTF-8 带 BOM（Windows PowerShell 5.1 需 BOM 才能解析中文）。
+- README（中/英）「快速开始」改为「一键安装」，并解释「插件列表显示本地版本、`^0.2.0` 导致停在 0.2.0、需精确版本安装」的原因。
+
 ## [0.3.3] — 2026-08-27
 
 ### 重要改变
