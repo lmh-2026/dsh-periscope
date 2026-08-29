@@ -1,62 +1,47 @@
 {
-    "name":  "dsh-periscope",
-    "version":  "0.3.5",
-    "description":  "DSH Desktop plugin: keep text-only models (deepseek-v4-flash / deepseek-v4-pro) as the session default and automatically route image-bearing requests to a configured vision model; also ships the generic file-attachment feature (drag/paste any file as a durable attachment the agent reads by path) as core patches, applied to the packaged app.asar via the in-place repacker (scripts/apply-file-attachments.ps1 / scripts/repack-inplace.mjs). Only the DSH Desktop client (dshdesktop.cn) is supported.",
-    "type":  "module",
-    "main":  "lib/index.js",
-    "files":  [
-                  "lib",
-                  "patches",
-                  "scripts",
-                  "docs",
-                  "install.ps1",
-                  "bin",
-                  "cordis.patch.yml",
-                  "README.md",
-                  "README.en.md",
-                  "LICENSE",
-                  "CHANGELOG.md"
-              ],
-    "bin":  {
-                "dsh-periscope-install":  "bin/install.mjs"
-            },
-    "scripts":  {
-                    "patch:apply":  "node scripts/patch-core.mjs apply",
-                    "patch:revert":  "node scripts/patch-core.mjs revert",
-                    "patch:verify":  "node scripts/patch-core.mjs verify",
-                    "patch:diff":  "node scripts/patch-core.mjs diff"
-                },
-    "license":  "MIT",
-    "author":  "lmh-2026",
-    "repository":  {
-                       "type":  "git",
-                       "url":  "git+https://github.com/lmh-2026/dsh-periscope.git"
-                   },
-    "homepage":  "https://github.com/lmh-2026/dsh-periscope#readme",
-    "bugs":  {
-                 "url":  "https://github.com/lmh-2026/dsh-periscope/issues"
-             },
-    "keywords":  [
-                     "deepseek-harness",
-                     "dsh",
-                     "plugin",
-                     "bundle",
-                     "vision",
-                     "image",
-                     "multimodal",
-                     "auto-switch",
-                     "periscope",
-                     "attachment",
-                     "file",
-                     "upload"
-                 ],
-    "dsh":  {
-                "bundle":  {
-                               "patch":  "./cordis.patch.yml"
-                           }
-            },
-    "peerDependencies":  {
-                             "@deepseek-ai/cordis":  "^4.0.1",
-                             "@deepseek-ai/schemastery":  "^3.18.1"
-                         }
+    "name": "dsh-periscope",
+    "version": "0.4.0",
+    "description": "DSH Desktop: drop/paste any file (docx/xlsx/pdf/txt/zip…) into the conversation — the agent reads it by path. Generic file attachments are applied as core patches to the packaged app.asar via the in-place repacker (scripts/repack-inplace.mjs / install.ps1). Only the DSH Desktop client (dshdesktop.cn) is supported.",
+    "type": "module",
+    "files": [
+        "patches",
+        "scripts",
+        "docs",
+        "install.ps1",
+        "bin",
+        "README.md",
+        "README.en.md",
+        "LICENSE",
+        "CHANGELOG.md"
+    ],
+    "bin": {
+        "dsh-periscope-install": "bin/install.mjs"
+    },
+    "scripts": {
+        "patch:apply": "node scripts/patch-core.mjs apply",
+        "patch:revert": "node scripts/patch-core.mjs revert",
+        "patch:verify": "node scripts/patch-core.mjs verify",
+        "patch:diff": "node scripts/patch-core.mjs diff"
+    },
+    "license": "MIT",
+    "author": "lmh-2026",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/lmh-2026/dsh-periscope.git"
+    },
+    "homepage": "https://github.com/lmh-2026/dsh-periscope#readme",
+    "bugs": {
+        "url": "https://github.com/lmh-2026/dsh-periscope/issues"
+    },
+    "keywords": [
+        "deepseek-harness",
+        "dsh",
+        "dsh-desktop",
+        "attachment",
+        "file",
+        "upload",
+        "asar",
+        "patch",
+        "installer"
+    ]
 }

@@ -2,7 +2,7 @@
 
 # 🔭 dsh-periscope
 
-**让 DSH Desktop 的纯文本模型也能「看」图，并把任意文件拖进对话交给 agent 读取。**
+**让 DSH Desktop 支持拖入/粘贴任意文件，agent 按路径读取。**
 
 <br />
 
@@ -39,8 +39,7 @@
 
 | 能力 | 说明 |
 | --- | --- |
-| 🔀 **视觉自动路由** | 纯文本会话里贴图，无需手动切换——含图请求自动改派官方视觉模型 `deepseek-v4-flash-vision-exp`，文字请求零开销走文本模型 |
-| 📎 **通用文件附件** | 原版只收图片；本插件支持拖入/粘贴**任意文件**（docx/xlsx/pdf/txt/zip…）→ 附件卡片 → 落盘 → agent 按路径读取 |
+| 📎 **通用文件附件** | 原版只收图片；本工具支持拖入/粘贴**任意文件**（docx/xlsx/pdf/txt/zip…）→ 附件卡片 → 落盘 → agent 按路径读取 |
 | 🗂️ **文件类型图标** | 附件卡片按扩展名显示彩色类型方块（Word 蓝 W / Excel 绿 X / PDF 红 P…） |
 | 💾 **持久化落盘** | 文件保存到 `~/.dsh/attachments/v1/files/`，会话历史保留附件块与完整绝对路径 |
 | 🛡️ **崩溃修复** | 修复文件草稿发送/删除时 `Cannot read properties of undefined (reading 'startsWith')` |
@@ -48,26 +47,13 @@
 
 ---
 
-## ⚠️ 开关说明：两种功能、两套机制（重要）
+## ⚠️ 生效方式（重要）
 
-很多用户会困惑「DSH 插件列表里的滑块开关为什么管不住文件附件」。因为这两个功能**挂在完全不同的两层**：
+文件附件**不是插件开关**，而是对 DSH 核心的直接补丁：
 
-| 功能 | 挂在哪一层 | 怎么生效 | 滑块开关（启用中）管得到吗 |
-| --- | --- | --- | --- |
-| 🔀 **视觉路由** | `dsh-periscope` 插件 **bundle** | DSH 启动时按插件列表加载 | ✅ **管得到**——开关切换的就是它 |
-| 📎 **文件附件** | DSH **核心 6 个包**（`app.asar` 内） | 用 `install.ps1` 给 `app.asar` 原位打补丁，**一经打包即固定** | ❌ **管不到** |
-
-**为什么？**
-
-- **视觉路由是插件**：它通过 DSH 的插件系统在运行时加载。插件列表的滑块开关，控制的就是「`dsh-periscope` 插件是否被加载」，所以**只影响视觉路由**。
-- **文件附件是核心补丁**：DSH 核心的 `session.prompt` wire 校验 schema 是 `dsh-host-apiproxy` 模块**内部常量**，第三方插件在运行时**无法扩展**。要给 DSH 增加「任意文件」能力，只能**直接修改核心**，而 `app.asar` 是一次性打包的——它**不属于插件的运行时开关范畴**。
-
-**实际表现**：
-
-- 文件附件是否生效，只取决于 `app.asar` **是否被打过补丁**（有没有跑过 `install.ps1`）。**跟滑块开关无关**：打过补丁 → 关掉滑块文件附件照样生效；没打过 → 滑块开再大也没用。
-- 滑块开关在「插件列表里」看到的效果仅限**视觉路由**那一半。
-
-> ✅ 所以滑块开关不是「没用」，而是它只管**视觉路由**；**文件附件需用 `install.ps1` 打 `app.asar` 补丁**。这两件事要分开看待。
+- DSH 核心的 `session.prompt` wire 校验 schema 是 `dsh-host-apiproxy` 模块**内部常量**，第三方插件运行时**无法扩展**。要给 DSH 增加「任意文件」能力，只能**直接修改核心**，而 `app.asar` 是一次性打包的。
+- 功能是否生效，只取决于 `app.asar` **是否被打过补丁**（有没有跑过安装脚本）。**与插件列表里的任何开关无关**：打过补丁 → 生效；没打过 → 怎么设置都没用。
+- `app.asar` 在每次 DSH 升级时都会被重新打包，所以**每次升级后都要重跑一次安装脚本**。
 
 ---
 
@@ -75,7 +61,7 @@
 
 > **只适配 [DSH Desktop 桌面客户端](https://www.dshdesktop.cn/)**（以单个 `app.asar` 打包核心的形态）。请在 **Windows** 上操作，且**每次 DSH 升级后都要重做一次**。
 
-本插件已发布到 npm：[`dsh-periscope@0.3.4`](https://www.npmjs.com/package/dsh-periscope)。仓库根目录自带一个**一键安装脚本 `install.ps1`**，它会一次性完成「安装 bundle + 修正确版本号 + 重打包 `app.asar`」，用户不必手工拆两步。
+本工具已发布到 npm：[`dsh-periscope`](https://www.npmjs.com/package/dsh-periscope)。仓库根目录自带一键安装脚本 `install.ps1`，一次性完成「退出检测 → 备份 → 原位重打包 `app.asar`」。
 
 ### 方式 A：从 GitHub 仓库（zip / clone）
 
@@ -93,28 +79,17 @@ npm install dsh-periscope
 npx dsh-periscope-install
 ```
 
-也可以直接用 DSH 的插件入口：
-
-```bash
-dsh plugin add dsh-periscope@0.3.4     # 精确版本 → 插件列表正确显示版本
-```
-
-**脚本会自动做这几件事**：退出检测 → 备份 `app.asar` → 以精确版本 `dsh plugin add dsh-periscope@<ver>` 安装/更新 bundle（把依赖从 `^0.2.0` 修正为 `^0.3.3`，从而让 DSH 插件列表正确显示版本）→ 用已安装包内的 `scripts/repack-inplace.mjs` 对 `app.asar` 做原位重打包（注入 6 个补丁核心文件，保留原生模块）→ 校验 + 提示重启。
-
-- 手动指定版本 / profile：`.\install.ps1 -Version 0.3.3 -Profile desktop`
-- 离线（不走 npm registry）：`.\install.ps1 -FromLocal`
-
-> ⚠️ 关键点：插件列表显示的是**本地安装**版本。此前停在 `0.2.0` 是因为依赖写成了 `^0.2.0`（`^0.2.0` = `>=0.2.0 <0.3.0`，永远够不到 0.3.x）。用**精确版本**安装即可绕过该限制，让版本号正确显示。
+**脚本会自动做这几件事**：退出检测 → 备份 `app.asar` → 用本包内 `scripts/repack-inplace.mjs` 对 `app.asar` 做原位重打包（注入 6 个补丁核心文件，保留原生模块）→ 校验 + 提示重启。
 
 ### 3. 重新打开 DSH
 
-拖入 / 粘贴一个非图片文件，即可看到带类型图标的附件卡片；发送后 agent 会按路径读取它。DSH 插件列表应显示 `dsh-periscope v0.3.3`。
+拖入 / 粘贴一个非图片文件，即可看到带类型图标的附件卡片；发送后 agent 会按路径读取它。
 
 ---
 
 ## 📖 工作原理
 
-文件附件功能位于 DSH **核心包**（wire 协议、附件存储、composer、模型适配器），而核心校验 schema 是 `dsh-host-apiproxy` 模块内部的常量，第三方插件运行时**无法扩展**——因此本插件随包携带对桌面端核心的**补丁**。
+文件附件功能位于 DSH **核心包**（wire 协议、附件存储、composer、模型适配器），而核心校验 schema 是 `dsh-host-apiproxy` 模块内部的常量，第三方插件运行时**无法扩展**——因此本工具随包携带对桌面端核心的**补丁**。
 
 ```text
 拖入/粘贴任意文件 📎
@@ -129,31 +104,19 @@ dsh plugin add dsh-periscope@0.3.4     # 精确版本 → 插件列表正确显�
 
 **为什么不是把文件直接发给模型？** DeepSeek 官方 [Files API 仅支持 JPEG/PNG/GIF/WebP 图片](https://api-docs.deepseek.com/zh-cn/guides/files_api/)，非图片文档无法直接送入模型。路径式消费是 agent 架构下的等价体验（Codex 同款做法）：文件真实落盘，agent 用 `read`/`bash`/`pwsh` 等工具读取。
 
-**默认限制**（可通过 `dsh-attachment-local` 配置调整）：单文件 **20 MiB**、单条消息 **20 个文件**、单条合计 **200 MiB**；客户端与 host 双重校验。
+**默认限制**：单文件 **20 MiB**、单条消息 **20 个文件**、单条合计 **200 MiB**；客户端与 host 双重校验。
 
 ---
 
-## 🛠️ 配置
+## ⚙️ 限制配置
 
-官方 DeepSeek 无需任何设置即开箱即用：
+默认值开箱即用，也可在 `dsh-attachment-local` 插件配置中调整：
 
 | 字段 | 默认值 | 说明 |
 | --- | --- | --- |
-| `provider` | `deepseek-official` | 承载模型的路由 provider |
-| `textModels` | `["deepseek-v4-flash", "deepseek-v4-pro"]` | 含图请求会被路由到视觉模型的文本模型 |
-| `visionModel` | `deepseek-v4-flash-vision-exp` | 含图请求使用的视觉模型 |
-
-在 profile 的 `cordis.patch.yml`（用户层会整体替换该行配置）覆盖：
-
-```yaml
-- id: periscope
-  config:
-    provider: deepseek-official
-    textModels: [deepseek-v4-flash, deepseek-v4-pro]
-    visionModel: deepseek-v4-flash-vision-exp
-```
-
-该 provider 的模型目录需同时包含这些文本模型与一个声明了 `image` 输入的视觉模型（DeepSeek 目录已满足）✅
+| `maxFileBytes` | `20971520`（20 MiB） | 单个文件大小上限 |
+| `maxFilesPerMessage` | `20` | 单条消息最多附件数 |
+| `maxMessageFileBytes` | `209715200`（200 MiB） | 单条消息附件合计上限 |
 
 ---
 
@@ -166,7 +129,6 @@ dsh plugin add dsh-periscope@0.3.4     # 精确版本 → 插件列表正确显�
 | `scripts/repack-inplace.mjs` | 原位重打包：只替换 6 个文件，保留其余文件字节与原生模块结构 |
 | `scripts/apply-file-attachments.ps1` | 一键入口：退出检测 → 备份 → 重打包 → 校验 |
 | `scripts/patch-core.mjs` | `apply` / `revert` / `verify` / `diff`（面向松散核心的历史方式） |
-| `lib/` · `cordis.patch.yml` | 插件本体与 DSH 补丁声明 |
 
 涉及的 6 个核心包：`@deepseek-ai/dsh-attachment`、`dsh-attachment-local`、`dsh-host-apiproxy`、`dsh-llm-deepseek`、`dsh-client-ui-conversation`、`dsh-client-ui-attachment`。
 
@@ -181,7 +143,7 @@ A：正常。DSH 每次升级都会重新打包 `app.asar`，功能随之失效�
 A：不行。naive 的 `extract→pack` 会孤立 unpacked 原生模块（conpty / sharp / koffi），导致 DSH 无法启动。请使用仓库自带的**原位重打包器**。
 
 **Q：支持 Web / CLI / 源码形态吗？**
-A：不支持。本插件只适配 DSH Desktop 桌面端以单个 `app.asar` 打包核心的形态。
+A：不支持。本工具只适配 DSH Desktop 桌面端以单个 `app.asar` 打包核心的形态。
 
 **Q：为什么非图片文件要 agent 按路径读，而不是直接发给模型？**
 A：DeepSeek 官方 Files API 只接受图片。路径式消费是 agent 架构下的等价体验。
@@ -193,7 +155,7 @@ A：脚本内置了 DSH runtime 与 Codex runtime 两个候选；仍不行时改
 
 ## ⚠️ 风险与免责声明
 
-**本插件通过直接修改 DSH 桌面端的核心文件来工作，属于非官方行为。** 请在使用前充分了解：
+**本工具通过直接修改 DSH 桌面端的核心文件来工作，属于非官方行为。** 请在使用前充分了解：
 
 | 风险 | 说明 |
 | --- | --- |

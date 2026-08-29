@@ -2,7 +2,7 @@
 
 # 🔭 dsh-periscope
 
-**Let DSH Desktop's text-only model "see" images, and drop any file into the conversation for the agent to read.**
+**Drop or paste any file into DSH Desktop and let the agent read it by path.**
 
 <br />
 
@@ -39,8 +39,7 @@
 
 | Capability | Description |
 | --- | --- |
-| 🔀 **Vision auto-routing** | Attach an image in a text-only session with no manual switching — requests with images are auto-dispatched to the official vision model `deepseek-v4-flash-vision-exp`; text requests stay on the text model at zero cost |
-| 📎 **Generic file attachments** | Stock DSH only accepts images; this plugin lets you drop/paste **any file** (docx/xlsx/pdf/txt/zip…) → attachment card → persisted → agent reads by path |
+| 📎 **Generic file attachments** | Stock DSH only accepts images; this tool lets you drop/paste **any file** (docx/xlsx/pdf/txt/zip…) → attachment card → persisted → agent reads by path |
 | 🗂️ **File-type icons** | Cards show a colored type tile per extension (Word blue W / Excel green X / PDF red P…) |
 | 💾 **Durable storage** | Files saved under `~/.dsh/attachments/v1/files/`; history keeps the block and the absolute path |
 | 🛡️ **Crash fix** | Fixes `Cannot read properties of undefined (reading 'startsWith')` when sending/removing file drafts |
@@ -48,26 +47,13 @@
 
 ---
 
-## ⚠️ Toggle explained: two features, two mechanisms (important)
+## ⚠️ How it's enabled (important)
 
-People often wonder why the slider in DSH's plugin list doesn't control file attachments. That's because the two features live on **two completely different layers**:
+File attachments are **NOT a plugin toggle** — they are a direct patch to the DSH core:
 
-| Feature | Lives on | How it's enabled | Does the plugin-list toggle control it? |
-| --- | --- | --- | --- |
-| 🔀 **Vision routing** | the `dsh-periscope` plugin **bundle** | loaded at startup via the plugin list | ✅ **Yes** — the toggle switches exactly this |
-| 📎 **File attachments** | DSH's **6 core packages** (inside `app.asar`) | `install.ps1` in-place patches `app.asar`; **fixed once packaged** | ❌ **No** |
-
-**Why?**
-
-- **Vision routing is a plugin**: it's loaded at runtime through DSH's plugin system. The plugin-list slider controls whether the `dsh-periscope` bundle is loaded, so it only affects vision routing.
-- **File attachments are a core patch**: DSH core's `session.prompt` wire schema is a **module-internal constant** in `dsh-host-apiproxy` that a third-party plugin **cannot extend at runtime**. Giving DSH an "any file" capability requires **directly modifying the core**, and `app.asar` is packed once — it's **outside the plugin's runtime toggle**.
-
-**What this means in practice**:
-
-- Whether file attachments work depends only on whether `app.asar` **has been patched** (whether `install.ps1` was run). It has **nothing to do with the slider**: patched → turning the slider off leaves file attachments working; not patched → the slider can't help.
-- The slider's visible effect is limited to the **vision-routing** half.
-
-> ✅ So the slider isn't pointless — it just governs **vision routing**. **File attachments need `install.ps1` to patch `app.asar`.** Treat the two separately.
+- DSH core's `session.prompt` wire validation schema is a **module-internal constant** in `dsh-host-apiproxy` that a third-party plugin **cannot extend at runtime**. Giving DSH an "any file" capability requires **directly modifying the core**, and `app.asar` is packed once.
+- Whether it works depends only on whether `app.asar` **has been patched** (whether the installer was run). It has **nothing to do with any plugin-list toggle**: patched → it works; not patched → no setting can help.
+- `app.asar` is re-packed on every DSH upgrade, so **re-run the installer after each upgrade**.
 
 ---
 
@@ -75,7 +61,7 @@ People often wonder why the slider in DSH's plugin list doesn't control file att
 
 > **Only works with the [DSH Desktop client](https://www.dshdesktop.cn/)** (the form where the core is packed into a single `app.asar`). Operate on **Windows**, and **re-do this after every DSH upgrade**.
 
-Published to npm: [`dsh-periscope@0.3.4`](https://www.npmjs.com/package/dsh-periscope). The repo ships a one-click `install.ps1` that does "install the bundle + fix the version + repack `app.asar`" in a single step.
+Published to npm: [`dsh-periscope`](https://www.npmjs.com/package/dsh-periscope). The repo ships a one-click `install.ps1` that handles "quit check → backup → in-place repack `app.asar`" in a single step.
 
 ### A. From GitHub (zip / clone)
 
@@ -93,22 +79,11 @@ npm install dsh-periscope
 npx dsh-periscope-install
 ```
 
-Or use the DSH plugin entry directly:
-
-```bash
-dsh plugin add dsh-periscope@0.3.4     # exact version -> plugin list shows the right version
-```
-
-**The script does**: quit check → back up `app.asar` → install/update the bundle at the exact version via `dsh plugin add dsh-periscope@<ver>` (bumps the dependency from `^0.2.0` to `^0.3.3`, so the DSH plugin list shows the correct version) → in-place repack `app.asar` with the installed package's `scripts/repack-inplace.mjs` (injects the 6 patched core files, preserving native modules) → verify + prompt to restart.
-
-- Pick a version / profile: `.\install.ps1 -Version 0.3.3 -Profile desktop`
-- Offline (skip npm registry): `.\install.ps1 -FromLocal`
-
-> ⚠️ Key point: the plugin list shows the **locally installed** version. It was stuck at `0.2.0` because the dependency was `^0.2.0` (= `>=0.2.0 <0.3.0`, which can never reach 0.3.x). Installing an **exact version** bypasses that and shows the correct version.
+**The script does**: quit check → back up `app.asar` → in-place repack `app.asar` with this package's `scripts/repack-inplace.mjs` (injects the 6 patched core files, preserving native modules) → verify + prompt to restart.
 
 ### 3. Reopen DSH
 
-Drop/paste a non-image file and you'll see an attachment card with the file-type icon; after sending, the agent reads it by path. The DSH plugin list should show `dsh-periscope v0.3.3`.
+Drop/paste a non-image file and you'll see an attachment card with the file-type icon; after sending, the agent reads it by path.
 
 ---
 
@@ -129,31 +104,19 @@ drop / paste any file 📎
 
 **Why not hand the file to the model directly?** DeepSeek's official [Files API only accepts JPEG/PNG/GIF/WebP images](https://api-docs.deepseek.com/guides/files_api/), so non-image documents cannot be sent to the model. Path-based consumption is the equivalent experience in an agent architecture (the Codex approach): the file is really on disk and the agent reads it with `read`/`bash`/`pwsh`.
 
-**Default limits** (configurable via `dsh-attachment-local`): **20 MiB** per file, **20 files** per message, **200 MiB** per message; enforced on both client and host.
+**Default limits**: **20 MiB** per file, **20 files** per message, **200 MiB** per message; enforced on both client and host.
 
 ---
 
-## 🛠️ Configuration
+## ⚙️ Limit configuration
 
-Defaults work out of the box for the official DeepSeek setup:
+The defaults work out of the box; tune them in the `dsh-attachment-local` plugin config:
 
 | Field | Default | Meaning |
 | --- | --- | --- |
-| `provider` | `deepseek-official` | LLM route provider owning the models |
-| `textModels` | `["deepseek-v4-flash", "deepseek-v4-pro"]` | Text-only models whose image-bearing requests route to the vision model |
-| `visionModel` | `deepseek-v4-flash-vision-exp` | Model used for requests with images |
-
-Override in the profile's `cordis.patch.yml` (user layer replaces the whole row config):
-
-```yaml
-- id: periscope
-  config:
-    provider: deepseek-official
-    textModels: [deepseek-v4-flash, deepseek-v4-pro]
-    visionModel: deepseek-v4-flash-vision-exp
-```
-
-The provider's catalog must contain the text models and the vision model whose entry declares `image` input (the DeepSeek catalog already does) ✅
+| `maxFileBytes` | `20971520` (20 MiB) | Max size of a single file |
+| `maxFilesPerMessage` | `20` | Max attachments per message |
+| `maxMessageFileBytes` | `209715200` (200 MiB) | Max aggregate attachment bytes per message |
 
 ---
 
@@ -166,7 +129,6 @@ The provider's catalog must contain the text models and the vision model whose e
 | `scripts/repack-inplace.mjs` | in-place repack: replaces only these 6 files, preserving every other entry and the native-module layout |
 | `scripts/apply-file-attachments.ps1` | one-click entry: quit check → backup → repack → verify |
 | `scripts/patch-core.mjs` | `apply` / `revert` / `verify` / `diff` (legacy loose-core path) |
-| `lib/` · `cordis.patch.yml` | the plugin itself and its DSH patch declaration |
 
 Affected core packages: `@deepseek-ai/dsh-attachment`, `dsh-attachment-local`, `dsh-host-apiproxy`, `dsh-llm-deepseek`, `dsh-client-ui-conversation`, `dsh-client-ui-attachment`.
 
@@ -193,7 +155,7 @@ A: The script tries DSH's runtime and Codex runtime; if still missing, edit `$no
 
 ## ⚠️ Risks & disclaimer
 
-**This plugin works by directly modifying DSH Desktop's core files — it is unofficial.** Please understand this before use:
+**This tool works by directly modifying DSH Desktop's core files — it is unofficial.** Please understand this before use:
 
 | Risk | Description |
 | --- | --- |

@@ -4,6 +4,14 @@ All notable changes to this project are documented here. The format is based
 on [Keep a Changelog](https://keepachangelog.com/), and this project adheres
 to [Semantic Versioning](https://semver.org/).
 
+## [0.4.0] — 2026-08-29
+
+### 重大改变
+- **移除视觉自动路由**（`lib/` 插件 bundle 与 `cordis.patch.yml` 一并删除）：项目聚焦单一功能——**通用文件附件**。不再需要 `dsh plugin add`，也没有插件列表开关；文件附件通过 `install.ps1` 对 `app.asar` 原位重打包生效。
+- `package.json`：移除 `main`、`dsh.bundle.patch`、`peerDependencies`（cordis / schemastery）与相关 keywords；描述更新为纯文件附件；版本升至 0.4.0。
+- `install.ps1`：删除 bundle 安装步骤（`dsh plugin add ...`）与 `-Version` / `-Profile` / `-FromLocal` / `-SkipRepack` 参数，只保留「退出检测 → 备份 → 原位重打包 → 校验」。
+- README（中/英）重写为纯文件附件介绍。
+
 ## [0.3.5] — 2026-08-27
 
 ### 文档
